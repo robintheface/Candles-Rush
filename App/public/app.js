@@ -1622,8 +1622,10 @@ if (canvas) {
       p.life += dt;
       if (p.life >= p.dur) popups.splice(i, 1);
     }
-    bgScrollX -= dx * 0.5;
-    if (bgScrollX <= -bgNaturalW) bgScrollX += bgNaturalW;
+    const backgroundCycleWidth = bgDrawW * 2;
+    if (backgroundCycleWidth > 0) {
+      bgScrollX = (bgScrollX - dx * 0.5) % backgroundCycleWidth;
+    }
     // playerHitBox already updated freshly above
     for (let i = 0; i < obstacles.length; i++) {
       const o = obstacles[i];
@@ -1753,10 +1755,19 @@ if (canvas) {
   }, draw = function() {
     ctx.clearRect(0, 0, CW, CH);
     const bg = SPRITES.background.img;
-    let x = bgScrollX * bgScaleRatio;
-    while (x < CW) {
-      ctx.drawImage(bg, x, 0, bgDrawW, GROUND_Y);
-      x += bgDrawW;
+    const backgroundCycleWidth = bgDrawW * 2;
+    const normalizedScroll = (bgScrollX % backgroundCycleWidth + backgroundCycleWidth) % backgroundCycleWidth;
+    let pairX = normalizedScroll - backgroundCycleWidth;
+    while (pairX < CW) {
+      ctx.drawImage(bg, 0, 0, bg.naturalWidth, bgSourceH, pairX, 0, bgDrawW, GROUND_Y);
+
+      ctx.save();
+      ctx.translate(pairX + backgroundCycleWidth, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(bg, 0, 0, bg.naturalWidth, bgSourceH, 0, 0, bgDrawW, GROUND_Y);
+      ctx.restore();
+
+      pairX += backgroundCycleWidth;
     }
     ctx.fillStyle = "#1a2916";
     for (let i = 0; i < coins.length; i++) {
@@ -2306,8 +2317,7 @@ if (canvas) {
   let runAspect = 0.89;
   let jumpAspect = 0.85;
   let bgDrawW = 0;
-  let bgScaleRatio = 0;
-  let bgNaturalW = 0;
+  let bgSourceH = 0;
   const STATE = { LOADING: "loading", IDLE: "idle", SPAWN: "spawn", PLAYING: "playing", OVER: "over" };
   let state = STATE.LOADING;
   const mobileShell = document.body.dataset.mobile === "true";
@@ -2820,9 +2830,10 @@ if (canvas) {
         sprite.frameH = sprite.img.naturalHeight;
       }
     });
-    bgNaturalW = SPRITES.background.img.naturalWidth;
-    bgScaleRatio = GROUND_Y / SPRITES.background.img.naturalHeight;
-    bgDrawW = bgNaturalW * bgScaleRatio;
+    const background = SPRITES.background.img;
+    // Crop at the painted ground line so it aligns with the gameplay surface.
+    bgSourceH = Math.round(background.naturalHeight * 0.865);
+    bgDrawW = background.naturalWidth * (GROUND_Y / bgSourceH);
     assetsReady = true;
     document.dispatchEvent(new Event("hood-assets-ready"));
     state = STATE.IDLE;
