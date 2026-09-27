@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c1710">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self' https://firestore.googleapis.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Candle Rush</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body data-mobile="true" data-entry="welcome" data-intro="true">
+<main id="game" aria-label="Outrun the rug">
+<div id="studioIntro" role="img" aria-label="KTH Gaming Studio">
+  <div class="studio-intro-content">
+    <img src="art/studio-intro.png" alt="">
+  </div>
+</div>
+<div id="loadingScreen" role="dialog" aria-modal="true" aria-labelledby="loadingLabel">
+  <div class="loading-content">
+    <div class="loading-hero" aria-hidden="true"></div>
+    <div class="loading-ground" aria-hidden="true"></div>
+    <p id="loadingLabel" role="status">Loading game…</p>
+    <button id="loadingRetry" type="button" hidden>Try again</button>
+  </div>
+</div>
+<section id="welcomeScreen" aria-labelledby="welcomeTitle">
+  <div class="welcome-brand">
+    <p class="welcome-eyebrow">ROBIN THE FACE</p>
+    <div class="welcome-logo"><h1 id="welcomeTitle">CANDLE<br><span class="welcome-runner">RUSH</span></h1></div>
+    <p class="welcome-tagline">Outrun the rug.</p>
+  </div>
+  <div class="welcome-card">
+    <p class="welcome-kicker">READY TO RUN?</p>
+    <h2 id="welcomeHeading">Your next<br>great escape.</h2>
+    <p class="welcome-subtitle">Sign in and start your run.</p>
+    <div id="welcomeUserRow" class="welcome-user-row" hidden>
+      <div class="welcome-account-badge">
+        <span id="welcomeAccount" class="welcome-account"></span>
+      </div>
+      <button id="welcomeLogout" class="welcome-logout-btn" type="button">Log out</button>
+    </div>
+    <button id="returningPlay" type="button" hidden>Play</button>
+    <div id="welcomeBest" hidden>
+      <div class="welcome-best-heading">
+        <p>YOUR BEST · <span id="welcomeBestScore">0</span></p>
+        <a id="welcomeDonate" class="welcome-donate-pill" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=huakt@icloud.com&item_name=Support+Candle+Rush&currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal">
+          <span>Buy me a</span>
+          <span class="donate-icon" aria-hidden="true">☕</span>
+        </a>
+      </div>
+      <p id="welcomeBestPrompt">Your first adventure starts here.</p>
+    </div>
+    <button id="googleSignIn" type="button" aria-describedby="signInStatus" aria-disabled="true"><span class="google-mark" aria-hidden="true">G</span><span>Sign in with Google</span></button>
+    <p id="signInStatus" role="status">Use your Google name on the leaderboard.</p>
+    <button id="guestButton" type="button"><span>Play as Guest</span> <span aria-hidden="true">→</span></button>
+    <p id="welcomeNote" class="welcome-local-note">Your scores stay on this device.</p>
+  </div>
+</section>
+<div class="hood-game-wrap" inert id="hoodGameWrap" tabindex="0" aria-label="Candle Rush. Tap to start or jump.">
+    <canvas id="hoodGameCanvas" width="800" height="450" role="img" aria-label="Robin The Face endless runner mini-game"></canvas>
+    <div class="hood-game-hud">
+      <span id="hoodGameScore">0</span>
+    </div>
+    <span id="hoodGameBest" class="hood-game-best" hidden style="display:none !important;">Best: 0</span>
+    <span id="hoodGameVersionBadge" class="hood-game-version-badge"></span>
+    <button id="hoodGameSettingsBtn" class="hood-game-settings-btn" type="button" aria-expanded="false" aria-controls="hoodGameSettingsPanel" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h12M3 12h12M3 18h12" stroke="currentColor" stroke-width="2"/><g fill="currentColor"><circle cx="21" cy="6" r="1.5"/><circle cx="21" cy="12" r="1.5"/><circle cx="21" cy="18" r="1.5"/></g></svg></button>
+    <div id="hoodGameSettingsPanel" class="hood-game-settings-panel" role="dialog" aria-labelledby="settingsTitle" hidden>
+      <div class="mobile-settings-header">
+        <p id="settingsTitle" class="hood-game-settings-title">Settings</p>
+        <button id="settingsClose" class="settings-close-btn" type="button" aria-label="Close settings" hidden style="display:none;">✕</button>
+      </div>
+      <div class="settings-card-group">
+        <label class="hood-game-settings-row hood-game-settings-row-toggle">
+          <span class="settings-row-label">Master Sound</span>
+          <span class="hood-game-toggle">
+            <input type="checkbox" id="hoodGameSoundToggle">
+            <span class="hood-game-toggle-track" aria-hidden="true"></span>
+          </span>
+        </label>
+        <div class="settings-divider" aria-hidden="true"></div>
+        <label class="hood-game-settings-row hood-game-settings-row-slider">
+          <span class="volume-label"><span class="settings-row-label">Music</span> <span id="musicValue" class="volume-val-badge">50%</span></span>
+          <input type="range" id="hoodGameMusicVol" min="0" max="100" step="1">
+        </label>
+        <div class="settings-divider" aria-hidden="true"></div>
+        <label class="hood-game-settings-row hood-game-settings-row-slider">
+          <span class="volume-label"><span class="settings-row-label">SFX</span> <span id="sfxValue" class="volume-val-badge">50%</span></span>
+          <input type="range" id="hoodGameSfxVol" min="0" max="100" step="1">
+        </label>
+      </div>
+      <div class="settings-actions">
+        <button id="hoodGameRanksBtn" class="settings-btn settings-ranks-btn" type="button" hidden>
+          <svg class="settings-btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M18 4H6v5.5a6 6 0 0 0 12 0V4z"/></svg>
+          Leaderboard
+        </button>
+        <button id="settingsGoogleConnect" class="settings-btn settings-google-btn" type="button" hidden>
+          <span class="google-mark" aria-hidden="true">G</span> Connect with Google
+        </button>
+        <button id="settingsHomeBtn" class="settings-btn settings-home-btn" type="button">
+          <svg class="settings-btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+          Home
+        </button>
+        <p id="settingsAccountStatus" role="status" hidden style="display:none;"></p>
+      </div>
+      <div id="hoodGameVersion" class="hood-game-settings-version"></div>
+    </div>
+    <div id="hoodGameRanksPanel" class="hood-game-settings-panel hood-game-ranks-panel" hidden>
+      <p class="hood-game-settings-title">Leaderboard</p>
+      <p id="leaderboardStatus" class="local-ranks-caption" role="status">Top 10 runs · On this device</p>
+      <p class="local-ranks-caption">Playing as <span id="playerName">Guest</span></p>
+      <div class="hood-game-ranks-tabs" role="tablist">
+        <button type="button" class="hood-game-ranks-tab is-active" data-board="all" role="tab" aria-selected="true">All time</button>
+        <button type="button" class="hood-game-ranks-tab" data-board="today" role="tab" aria-selected="false">Today</button>
+      </div>
+      <ol id="hoodGameRanksList" class="hood-game-ranks-list"></ol>
+      <p id="hoodGameRanksEmpty" class="hood-game-ranks-empty" hidden>Finish a run to see your scores here.</p>
+      <button id="hoodGameRanksClose" class="hood-game-settings-save" type="button">Close</button>
+    </div>
+    <button id="pauseButton" class="hood-game-fullscreen-btn" type="button" aria-label="Pause game" hidden>Ⅱ</button>
+    <div id="eventFreezeBanner" class="event-freeze-banner" hidden style="display:none !important;">
+      <p id="eventFreezeTitle" class="event-freeze-title"></p>
+      <p id="eventFreezeScore" class="event-freeze-score"></p>
+    </div>
+    <div id="hoodGameOverlay" class="hood-game-overlay">
+      <div class="hood-game-overlay-inner">
+        <!-- Start / Tap to Start Banner (idle / loading) -->
+        <div id="hoodGameStartBanner" class="hood-game-start-banner">
+          <p id="hoodGameOverlayTitle" class="hood-game-overlay-title">TAP TO START</p>
+          <div id="hoodGameOverlayLines" class="hood-game-overlay-lines"></div>
+        </div>
+      </div>
+
+      <!-- Centered Game Over Results Card -->
+      <div id="gameOverCard" class="game-over-card" hidden>
+        <div class="game-over-header">
+          <p id="gameOverTitle" class="game-over-title">GAME OVER</p>
+          <p id="gameOverSubtitle" class="game-over-subtitle">Better luck next run!</p>
+        </div>
+
+        <div class="game-over-stats">
+          <div class="game-over-stat-box">
+            <span class="game-over-stat-label">THIS RUN</span>
+            <span id="gameOverCurrentScore" class="game-over-stat-value current">0</span>
+          </div>
+          <div class="game-over-stat-divider"></div>
+          <div class="game-over-stat-box">
+            <span class="game-over-stat-label">YOUR BEST</span>
+            <span id="gameOverBestScore" class="game-over-stat-value best">0</span>
+          </div>
+        </div>
+
+        <form id="hoodGameSaveScore" class="hood-game-save-score" hidden>
+          <div class="hood-game-save-row">
+            <span class="hood-game-save-field">
+              <input id="hoodGameNick" class="hood-game-save-input" type="text" maxlength="12" aria-label="Your name" autocomplete="off" spellcheck="false" placeholder="Your name" aria-describedby="hoodGameNickState">
+              <span id="hoodGameNickTick" class="hood-game-save-tick" aria-hidden="true">✓</span>
+            </span>
+            <button id="hoodGameNickSave" class="hood-game-save-btn" type="submit">Save</button>
+          </div>
+          <p id="hoodGameNickState" class="hood-game-save-state" role="status" hidden></p>
+          <button id="hoodGameNickSkip" class="hood-game-save-skip" type="button">Skip</button>
+          <p id="hoodGameSaveMsg" class="hood-game-save-msg" hidden></p>
+        </form>
+
+        <div class="game-over-actions">
+          <button id="gameOverHomeBtn" class="game-over-btn game-over-secondary-btn" type="button">MENU</button>
+          <button id="gameOverRestartBtn" class="game-over-btn game-over-primary-btn" type="button">RUN AGAIN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<div id="pauseScreen" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
+  <div class="hood-game-overlay-inner">
+    <p id="pauseTitle" class="hood-game-overlay-title">PAUSED</p>
+    <button id="resumeButton" class="hood-game-pause-tap" type="button">Tap to play again</button>
+    <button id="restartButton" type="button" hidden style="display:none;"></button>
+    <button id="quitButton" type="button" hidden style="display:none;"></button>
+  </div>
+</div>
+<div id="rotateScreen" role="dialog" aria-modal="true" aria-labelledby="rotateTitle" hidden>
+<div class="hood-game-overlay-inner"><p id="rotateTitle" class="hood-game-overlay-title">CANDLE RUSH</p><p>Rotate your phone to play</p></div>
+</div>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

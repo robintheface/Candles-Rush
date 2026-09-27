@@ -1,0 +1,46 @@
+{
+	"appId": "fun.robintheface.outruntherug",
+	"appName": "Candle Rush",
+	"webDir": "public",
+	"backgroundColor": "#101d17",
+	"ios": {
+		"contentInset": "never",
+		"preferredContentMode": "mobile"
+	},
+	"android": {
+		"backgroundColor": "#101d17"
+	},
+	"plugins": {
+		"SystemBars": {
+			"hidden": true,
+			"animation": "NONE"
+		},
+		"FirebaseAuthentication": {
+			"skipNativeAuth": false,
+			"providers": [
+				"google.com"
+			]
+		}
+	},
+	"experimental": {
+		"ios": {
+			"spm": {
+				"swiftToolsVersion": "6.1",
+				"packageOptions": {
+					"@capacitor-firebase/authentication": {
+						"symlink": true
+					}
+				},
+				"packageTraits": {
+					"@capacitor-firebase/authentication": [
+						"Google"
+					]
+				}
+			}
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"FirebaseAuthenticationPlugin"
+	]
+}

@@ -1,0 +1,284 @@
+/* MAIN supplies the game's art, typography, colours, HUD and menus.
+   These overrides only fit that same game into the native display. */
+:root{--mobile-left:max(16px,calc(env(safe-area-inset-left) + 10px));--mobile-right:max(16px,calc(env(safe-area-inset-right) + 10px));--mobile-top:max(12px,env(safe-area-inset-top));--mobile-bottom:max(12px,env(safe-area-inset-bottom))}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;scroll-behavior:auto}
+body{background:var(--bg);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+[hidden]{display:none!important}
+#game{position:fixed;inset:0;width:100%;height:100dvh;padding:0;overflow:hidden}
+/* Keep the game concealed until entry and pending loading work are complete.
+   Removing the busy state starts the same fade after the running-hero screen. */
+body[data-entry="welcome"] #hoodGameWrap,body[data-busy="true"] #hoodGameWrap{opacity:0;animation:none}
+body:not([data-entry="welcome"]):not([data-busy="true"]) #hoodGameWrap{animation:game-entry-fade 1s ease-out both}
+@keyframes game-entry-fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){body:not([data-entry="welcome"]):not([data-busy="true"]) #hoodGameWrap{animation:none;opacity:1}}
+#hoodGameWrap{position:absolute;inset:0;max-width:none;width:100%;height:100%;margin:0;border:0;border-radius:0;box-shadow:none;touch-action:manipulation;outline:none}
+#hoodGameCanvas{width:100%;height:100%;max-width:none;max-height:none;touch-action:none}
+#game .hood-game-hud{top:var(--mobile-top);padding-left:var(--mobile-left);font-size:24px;color:#f0ffe6;text-shadow:0 2px 4px #000}
+#game .hood-game-best,#game #hoodGameBest,.hood-game-best{display:none !important}
+#game .hood-game-version-badge{left:var(--mobile-left);bottom:var(--mobile-bottom);font-size:14px;font-weight:600;color:#d9f5c9;text-shadow:0 2px 4px #000}
+#game .hood-game-settings-btn{top:max(0px,calc(var(--mobile-top) - 12px));right:var(--mobile-right);min-height:48px;min-width:92px;font-size:22px;color:#f0ffe6;opacity:1;text-shadow:0 2px 4px #000}
+#game #pauseButton{right:var(--mobile-right);bottom:var(--mobile-bottom);width:50px;height:50px;font-size:27px;color:#f0ffe6;background:#09160fcc;border-color:#d9f5c980;text-shadow:0 1px 3px #000}
+#game .hood-game-overlay{padding:var(--mobile-top) var(--mobile-right) var(--mobile-bottom) var(--mobile-left)}
+#game .hood-game-overlay-inner{max-width:32ch}
+#game .hood-game-overlay-title{font-size:clamp(28px,8dvh,40px);margin:0 0 10px;color:#f6d773;-webkit-text-stroke:0;text-shadow:none}
+#game .hood-game-overlay-title-sm{font-size:clamp(24px,7dvh,32px)}
+#game .hood-game-overlay-lines p{font-size:19px}
+#game .hood-game-overlay-lines p+p{font-size:15px;margin-top:6px}
+#game .hood-game-overlay-lines .hood-game-overlay-score{font-size:42px}
+#game .hood-game-settings-panel{width:min(340px,80vw);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;padding:20px;z-index:10}
+#game .hood-game-settings-row{min-height:44px;font-size:15px}
+#game .hood-game-settings-row input[type=range]{min-height:44px}
+#game .hood-game-settings-save{min-height:44px;font-size:15px}
+#rotateScreen{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(8,12,7,.94);padding:var(--mobile-top) var(--mobile-right) var(--mobile-bottom) var(--mobile-left)}#rotateScreen p{color:#d7ffca}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+
+/* Soft feathered reveal (like PowerPoint Reveal / Soft Wipe from Left). */
+#studioIntro{position:fixed;inset:0;z-index:70;display:grid;place-items:center;box-sizing:border-box;padding:max(20px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));background:#09160f;opacity:1;transition:opacity 1s ease}
+.studio-intro-content{display:flex;flex-direction:column;align-items:center;gap:14px;max-width:100%}
+#studioIntro img{display:block;width:min(70vw,684px);max-height:54dvh;object-fit:contain;-webkit-mask-image:linear-gradient(to right,#000 0%,#000 33.3%,rgba(0,0,0,.8) 42%,rgba(0,0,0,.4) 52%,rgba(0,0,0,.1) 60%,transparent 66.7%,transparent 100%);-webkit-mask-size:300% 100%;-webkit-mask-position:100% 0;mask-image:linear-gradient(to right,#000 0%,#000 33.3%,rgba(0,0,0,.8) 42%,rgba(0,0,0,.4) 52%,rgba(0,0,0,.1) 60%,transparent 66.7%,transparent 100%);mask-size:300% 100%;mask-position:100% 0;animation:ppt-reveal-soft 3s linear 0s forwards}
+#studioIntro p{margin:0;color:#d9f5c9;font:600 clamp(9px,1.5vw,13px)/1.2 'IBM Plex Mono',monospace;letter-spacing:.28em;white-space:nowrap;-webkit-mask-image:linear-gradient(to right,#000 0%,#000 33.3%,rgba(0,0,0,.8) 42%,rgba(0,0,0,.4) 52%,rgba(0,0,0,.1) 60%,transparent 66.7%,transparent 100%);-webkit-mask-size:300% 100%;-webkit-mask-position:100% 0;mask-image:linear-gradient(to right,#000 0%,#000 33.3%,rgba(0,0,0,.8) 42%,rgba(0,0,0,.4) 52%,rgba(0,0,0,.1) 60%,transparent 66.7%,transparent 100%);mask-size:300% 100%;mask-position:100% 0;animation:ppt-reveal-soft 3s linear 0s forwards}
+#studioIntro.is-exiting{opacity:0;pointer-events:none}
+body[data-intro="true"] #welcomeScreen{visibility:hidden}
+@keyframes ppt-reveal-soft{0%{-webkit-mask-position:100% 0;mask-position:100% 0;opacity:0}1%{opacity:1}100%{-webkit-mask-position:0% 0;mask-position:0% 0;opacity:1}}
+@media(prefers-reduced-motion:reduce){#studioIntro img,#studioIntro p{animation:none;-webkit-mask-image:none;mask-image:none;opacity:1}#studioIntro{transition-duration:.15s}}
+
+@keyframes settingsPopIn{0%{transform:translate(-50%,-47%) scale(.94);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+#game #hoodGameSettingsPanel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;display:flex;flex-direction:column;box-sizing:border-box;width:min(340px,calc(100vw - var(--mobile-left) - var(--mobile-right) - 20px));max-height:min(350px,calc(100dvh - 36px));gap:10px;padding:14px 18px 12px;border-radius:18px;background:linear-gradient(165deg,rgba(14,28,19,.96) 0%,rgba(7,16,11,.98) 100%);border:1px solid rgba(224,178,58,.38);box-shadow:0 24px 70px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 20px rgba(224,178,58,.04);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:#eaf2e3;font-family:'IM Fell English',serif;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;touch-action:pan-y;animation:settingsPopIn .22s cubic-bezier(.16,1,.3,1) forwards}
+#game #hoodGameSettingsPanel *{font-family:'IM Fell English',serif}
+#game #hoodGameSettingsPanel::-webkit-scrollbar{display:none}
+#game #hoodGameSettingsPanel .mobile-settings-header{display:flex;align-items:center;justify-content:center;width:100%;min-height:28px;margin:0 0 4px;padding:0;border:0;border-bottom:none !important}
+#game #hoodGameSettingsPanel .hood-game-settings-title{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:0;border:0;border-bottom:none !important;font:700 20px/1 'IM Fell English',serif !important;letter-spacing:.08em;text-transform:uppercase;color:#f6d773;text-shadow:none}
+#game #hoodGameSettingsPanel .settings-close-btn,#settingsClose{display:none !important}
+.settings-card-group{display:flex;flex-direction:column;width:100%;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:4px 12px}
+.settings-divider{width:100%;height:1px;background:rgba(255,255,255,.05);margin:0}
+#game #hoodGameSettingsPanel .hood-game-settings-row{box-sizing:border-box;width:100%;min-height:42px;margin:0;padding:0;display:flex;align-items:center;justify-content:space-between}
+#game #hoodGameSettingsPanel .hood-game-settings-row-slider{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:10px}
+.settings-row-label{display:inline-flex;align-items:center;gap:8px;font:600 16px/1 'IM Fell English',serif !important;color:#ebf5e4;letter-spacing:.02em}
+.volume-label{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.volume-val-badge{display:inline-block;padding:2px 6px;border-radius:6px;background:rgba(224,178,58,.15);border:1px solid rgba(224,178,58,.3);color:#f6d773;font:700 12px/1 'Times New Roman',Times,serif !important;min-width:26px;text-align:center}
+#musicValue,#sfxValue{font-family:'Times New Roman',Times,serif !important}
+#game #hoodGameSettingsPanel .hood-game-toggle{display:inline-block;position:relative;width:44px;height:24px;border-radius:999px;cursor:pointer;touch-action:manipulation}
+#game #hoodGameSettingsPanel .hood-game-toggle input{opacity:0;width:0;height:0;position:absolute}
+#game #hoodGameSettingsPanel .hood-game-toggle-track{box-sizing:border-box;position:absolute;inset:0;border-radius:999px;background:rgba(35,55,42,.75);border:1px solid rgba(224,178,58,.35);transition:background .2s ease,border-color .2s ease,box-shadow .2s ease}
+#game #hoodGameSettingsPanel .hood-game-toggle-track::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0%,#dcdcdc 100%);box-shadow:0 2px 5px rgba(0,0,0,.5);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+#game #hoodGameSettingsPanel .hood-game-toggle input:checked+.hood-game-toggle-track{background:linear-gradient(135deg,#f0c858,#c49622);border-color:rgba(240,200,88,.7);box-shadow:0 0 10px rgba(240,200,88,.35)}
+#game #hoodGameSettingsPanel .hood-game-toggle input:checked+.hood-game-toggle-track::after{transform:translateX(20px)}
+#game #hoodGameSettingsPanel input[type=range]{display:block;box-sizing:border-box;width:100%;height:36px;min-height:36px;margin:0;padding:0;border:0;background:transparent;touch-action:pan-y;outline-offset:0;-webkit-appearance:none}
+#game #hoodGameSettingsPanel input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:linear-gradient(to right,#f0c858 var(--volume,50%),#243528 var(--volume,50%))}
+#game #hoodGameSettingsPanel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;margin-top:-6px;border:2px solid #fff;border-radius:50%;background:#f0c858;box-shadow:0 2px 7px rgba(0,0,0,.6),0 0 4px rgba(240,200,88,.5);transition:transform .1s ease}
+#game #hoodGameSettingsPanel input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
+.settings-actions{display:flex;flex-direction:column;width:100%;gap:8px;margin:0;padding:0}
+#game #hoodGameSettingsPanel .settings-btn,
+#game #hoodGameSettingsPanel #hoodGameRanksBtn,
+#game #hoodGameSettingsPanel #settingsGoogleConnect,
+#game #hoodGameSettingsPanel #settingsHomeBtn{box-sizing:border-box;width:100%;min-height:42px;height:42px;margin:0;padding:0 16px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font:700 16px/1 'IM Fell English',serif !important;letter-spacing:.04em;touch-action:manipulation;transition:transform .12s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+#game #hoodGameSettingsPanel .settings-btn:active,
+#game #hoodGameSettingsPanel #hoodGameRanksBtn:active,
+#game #hoodGameSettingsPanel #settingsGoogleConnect:active,
+#game #hoodGameSettingsPanel #settingsHomeBtn:active{transform:scale(.98)}
+#game #hoodGameSettingsPanel .settings-btn-icon{width:16px;height:16px;flex-shrink:0}
+#game #hoodGameSettingsPanel #hoodGameRanksBtn{background:linear-gradient(135deg,rgba(224,178,58,.2) 0%,rgba(224,178,58,.06) 100%);border:1px solid rgba(224,178,58,.45);color:#ffd978;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#game #hoodGameSettingsPanel #hoodGameRanksBtn:active{background:rgba(224,178,58,.3);border-color:rgba(240,200,88,.7)}
+#game #hoodGameSettingsPanel #settingsGoogleConnect{border:1px solid #dadce0;background:#fff;color:#25282a;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#game #hoodGameSettingsPanel #settingsGoogleConnect .google-mark{font:bold 18px Arial,sans-serif !important;color:#4285f4;line-height:1}
+#game #hoodGameSettingsPanel #settingsGoogleConnect:disabled{opacity:.6}
+#game #hoodGameSettingsPanel #settingsHomeBtn{background:linear-gradient(135deg,rgba(38,92,54,.38) 0%,rgba(18,48,28,.48) 100%);border:1px solid rgba(78,255,135,.42);color:#d7ffca;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+#game #hoodGameSettingsPanel #settingsHomeBtn:active{background:rgba(46,125,70,.52);border-color:rgba(78,255,135,.75)}
+#game #hoodGameSettingsPanel #settingsAccountStatus,
+#settingsAccountStatus{display:none !important}
+#game #hoodGameSettingsPanel .hood-game-settings-version{margin:2px 0 0;padding:4px 0 0;border-top:1px solid rgba(224,178,58,.12);font:12px 'IM Fell English',serif !important;color:rgba(160,185,150,.45);text-align:center;letter-spacing:.08em}
+@media(max-height:350px){#game #hoodGameSettingsPanel{gap:6px;padding:10px 16px 8px}#game #hoodGameSettingsPanel .hood-game-settings-version{display:none}}
+#game #hoodGameRanksPanel{box-sizing:border-box;width:min(360px,calc(100vw - var(--mobile-left) - var(--mobile-right)));max-height:calc(100dvh - 100px);padding:14px 18px;border-radius:18px;background:linear-gradient(165deg,rgba(14,28,19,.96) 0%,rgba(7,16,11,.98) 100%);border:1px solid rgba(224,178,58,.38);box-shadow:0 24px 70px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);touch-action:pan-y}
+#game #hoodGameRanksPanel .hood-game-settings-title{font-size:19px;margin-bottom:4px;padding-bottom:6px}
+.local-ranks-caption{margin:0 0 8px;text-align:center;font:10px 'IBM Plex Mono',monospace;color:#a1b398}
+#game .hood-game-ranks-list{max-height:120px;overflow:auto;touch-action:pan-y}
+#game .hood-game-ranks-row{font-size:12px;padding:8px 0}
+#game .hood-game-ranks-tab{min-height:36px;font-size:13px}
+#game #hoodGameRanksClose{width:112px;min-height:36px;margin:8px auto 0;font-size:14px}
+
+/* Google-only entry, balanced for landscape phones. */
+#welcomeScreen{position:fixed;inset:0;z-index:35;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:clamp(24px,5vw,64px);padding:var(--mobile-top) max(36px,var(--mobile-right)) var(--mobile-bottom) max(36px,var(--mobile-left));box-sizing:border-box;overflow:auto;background:radial-gradient(ellipse at 22% 45%,#34573380,transparent 55%),radial-gradient(ellipse at 95% 100%,#92732c22,transparent 50%),#09160f;color:#dcebd0;font-family:'IM Fell English',serif}
+.welcome-brand{justify-self:center;text-align:center}
+.welcome-eyebrow{font:9px 'IBM Plex Mono',monospace;letter-spacing:.2em;color:#aabc99;margin:0 0 7px}
+#welcomeTitle{letter-spacing:.04em;margin:0;color:#e9be4b}
+.welcome-tagline{font-size:14px;color:#b9caa8;margin:8px 0 0}
+
+.welcome-card{box-sizing:border-box;width:min(100%,330px);justify-self:center;text-align:left;border-left:1px solid #d4b96330;padding:12px 0 12px clamp(18px,3vw,32px)}
+.welcome-kicker{font:9px 'IBM Plex Mono',monospace;letter-spacing:.18em;color:#e9be4b;margin:0 0 12px}
+.welcome-card h2{font-size:clamp(26px,8dvh,36px);line-height:1.05;font-weight:400;margin:0 0 10px;color:#f4eedc}
+.welcome-subtitle{font-size:14px;color:#b4c5a6;margin:0 0 22px}
+
+.google-mark{font:bold 23px Arial,sans-serif;color:#4285f4}
+#signInStatus{font:10px/1.5 'IBM Plex Mono',monospace;color:#c1b58e;margin:10px 0 0;min-height:30px}
+.welcome-local-note{font:9px/1.5 'IBM Plex Mono',monospace;color:#91a589;margin:8px 0 0}
+@media(max-height:350px){.welcome-kicker{margin-bottom:7px}.welcome-subtitle{margin-bottom:12px}.welcome-card{padding-top:4px;padding-bottom:4px}}
+
+/* Animate MAIN's six original run frames without an extra GIF download. */
+#loadingScreen{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:#09120cf5;color:#c8f0b8;text-align:center}
+.loading-content{width:min(300px,80vw)}
+.loading-hero{width:89px;height:100px;margin:auto;background:url('game/character-run.png') 0 0 / 534px 100px no-repeat;animation:hero-loading-run .6s steps(6) infinite}
+.loading-ground{width:100px;height:1px;margin:0 auto;background:linear-gradient(90deg,transparent,#e0b23a,transparent)}
+#loadingLabel{font:15px 'IM Fell English',serif;margin:16px 0}
+#loadingRetry{min-height:44px;padding:8px 24px;border:1px solid #e0b23a;border-radius:8px;background:#e0b23a;color:#142016;font:16px 'IM Fell English',serif}
+@keyframes hero-loading-run{to{background-position:-534px 0}}
+.has-error .loading-hero{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.loading-hero{animation:none}}
+
+/* Anchor the small mascot to the final D so it follows the lettering at every size. */
+.welcome-logo{position:relative;padding-top:clamp(46px,15dvh,64px);isolation:isolate}
+#welcomeTitle{position:relative;font-size:clamp(38px,13dvh,58px);line-height:.94;text-shadow:0 2px 0 #09120c}
+.welcome-letter-d{position:relative;display:inline-block}
+.welcome-hero{position:absolute;display:block;width:1.08em;right:-.15em;bottom:calc(100% - .23em);z-index:2;transform:rotate(18deg) scaleX(-1);transform-origin:bottom center;pointer-events:none}
+/* Trim the lower torso between the hands; keep both gripping hands intact. */
+.welcome-hero img{display:block;width:100%;height:auto;clip-path:polygon(0 0,100% 0,100% 100%,77% 100%,77% 79%,34% 79%,34% 100%,0 100%)}
+.hero-eyelids{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.hero-eyelids g{opacity:0;animation:hero-eye-blink 4s infinite}
+.hero-eyelids path:not([fill]){fill:none;stroke:#17180e;stroke-width:3.5;stroke-linecap:round}
+/* Mirroring swaps the eyes: preserve the visible right-to-left blink. */
+.hero-eyelids .hero-blink-right{animation-delay:.18s}
+@keyframes hero-eye-blink{0%,72%,80%,100%{opacity:0}73%,78%{opacity:1}}
+.welcome-brand .welcome-eyebrow{margin-bottom:7px;font-size:9px}
+.welcome-brand .welcome-tagline{margin-top:8px;font-size:14px}
+@media(max-height:350px){.welcome-brand .welcome-eyebrow{display:none}}
+@media(prefers-reduced-motion:reduce){.hero-eyelids g{animation:none}}
+
+
+
+
+
+/* Shared mobile presentation tokens. */
+@font-face{font-family:'Hood Numerals';src:local('Times New Roman');unicode-range:U+0030-0039}
+:root{--ui-font:'Hood Numerals','IM Fell English',serif}
+#game,#game button,#game p,#game span,#game input{font-family:var(--ui-font)}
+#game #hoodGameScore,#game #hoodGameBest,#game #hoodGameVersion,#game .hood-game-ranks-num,#game .hood-game-ranks-score,#game .hood-game-overlay-score,#musicValue,#sfxValue,#welcomeBestScore{font-family:'Times New Roman',Times,serif}
+#game #hoodGameBest,#game .hood-game-best,.hood-game-best,#game #hoodGameVersionBadge,#game #pauseButton{display:none !important}
+#game #hoodGameScore,#game #hoodGameBest{font-size:26px;border:0;background:none}
+#game .hood-game-settings-btn{position:absolute;top:var(--mobile-top);right:var(--mobile-right);display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:12px;background:radial-gradient(circle at 35% 35%,rgba(28,52,35,.92),rgba(10,22,14,.96));border:1px solid rgba(224,178,58,.45);box-shadow:0 6px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.15);color:#f4eedc;opacity:1;transition:transform .12s ease,border-color .15s ease,background .15s ease;touch-action:manipulation}
+#game .hood-game-settings-btn:active{transform:scale(.92);background:rgba(224,178,58,.25);border-color:rgba(240,200,88,.8)}
+#game .hood-game-settings-btn svg{width:22px;height:22px;color:#f5d573;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+#pauseScreen{position:fixed;inset:0;width:100dvw;height:100dvh;padding:0;margin:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(4,10,6,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;z-index:45;-webkit-tap-highlight-color:transparent}
+#pauseScreen[hidden]{display:none !important}
+#pauseScreen .hood-game-overlay-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;border:none;background:transparent;box-shadow:none;padding:0;margin:0;gap:12px;pointer-events:auto}
+#pauseScreen #pauseTitle{margin:0;padding:0;font:700 clamp(38px,9.5dvh,48px)/1.1 'IM Fell English',serif;letter-spacing:.08em;text-transform:uppercase;color:#f6d773;-webkit-text-stroke:0;text-shadow:none}
+#pauseScreen #resumeButton{border:none;background:transparent;box-shadow:none;outline:none;margin:0;padding:0;width:auto;min-height:unset;font:400 clamp(20px,5dvh,25px)/1.3 'IM Fell English',serif;letter-spacing:.04em;color:#f6d773;opacity:.88;text-shadow:none;cursor:pointer;text-decoration:none;animation:none}
+#pauseScreen #resumeButton:active{opacity:1;transform:scale(.97)}
+@keyframes pulseTap{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}
+.welcome-logo{padding-top:0}
+.welcome-brand .welcome-eyebrow{margin-bottom:42px}
+.welcome-brand .welcome-tagline{margin-top:42px}
+.welcome-runner{font-size:.88em;letter-spacing:.22em}
+.welcome-user-row{display:flex;align-items:center;justify-content:flex-start;gap:8px;width:100%;margin:0 0 12px}
+.welcome-account-badge{box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;max-width:180px;height:30px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(224,178,58,.12);border:1px solid rgba(224,178,58,.35);color:#ffe8a1;font:600 12px/1 'IBM Plex Mono',monospace;box-shadow:0 2px 6px rgba(0,0,0,.25);overflow:hidden;flex-shrink:1}
+.welcome-account{display:inline-block;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.welcome-logout-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(220,60,60,.14);border:1px solid rgba(220,60,60,.35);color:#f5b0b0;font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.03em;cursor:pointer;touch-action:manipulation;transition:all .15s ease;flex-shrink:0}
+.welcome-logout-btn:active{background:rgba(220,60,60,.3);border-color:rgba(220,60,60,.7);transform:scale(.95)}
+#returningPlay,#googleSignIn,#guestButton{box-sizing:border-box;width:100%;min-height:46px;height:46px;margin:0;padding:8px 16px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation;transition:transform .12s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+#returningPlay:active,#googleSignIn:active,#guestButton:active{transform:scale(.98)}
+#returningPlay{border:1px solid #ffe39a;background:linear-gradient(135deg,#f5d573,#dba82d);color:#122315;font:700 17px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 4px 16px rgba(224,178,58,.35)}
+#returningPlay:active{background:#dba82d}
+#googleSignIn{border:1px solid #dadce0;background:#fff;color:#25282a;font:500 14px Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#googleSignIn .google-mark{font:bold 20px Arial,sans-serif;color:#4285f4;line-height:1}
+#guestButton{margin-top:8px;border:1px solid rgba(233,190,75,.45);background:rgba(233,190,75,.1);color:#f5d573;font:600 14px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#guestButton:active{background:rgba(233,190,75,.22)}
+#welcomeBest{margin-top:16px;padding-top:12px;border-top:1px solid rgba(233,190,75,.3);text-align:left}
+.welcome-best-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.welcome-best-heading p{margin:0;color:#e9d595;font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.06em}
+#welcomeBestScore{font-size:22px;color:#ffda69;font-weight:700;text-shadow:none}
+#welcomeBestPrompt{margin:6px 0 0;color:#b9caa8;font-size:13px;font-style:italic}
+.welcome-donate-pill{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:5px;height:30px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(224,178,58,.14);border:1px solid rgba(224,178,58,.4);color:#ffe596;font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.03em;text-decoration:none;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:all .15s ease}
+.welcome-donate-pill:active{background:rgba(224,178,58,.3);border-color:rgba(240,200,88,.8);transform:scale(.95)}
+.welcome-donate-pill .donate-icon{font-size:14px;line-height:1;display:inline-block;transform:translateY(-0.5px)}
+#signInStatus:empty{display:none}
+
+
+
+
+
+/* Game Over Overlay & Results Card */
+#game .hood-game-overlay{position:fixed;inset:0;width:100dvw;height:100dvh;padding:0;margin:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:rgba(4,10,6,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;pointer-events:auto;transition:opacity .2s ease;z-index:45}
+#game .hood-game-overlay.is-visible{opacity:1}
+#game .hood-game-overlay[hidden]{display:none !important}
+#game .hood-game-overlay-inner{max-width:none;width:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto}
+.hood-game-start-banner{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.hood-game-start-banner[hidden]{display:none !important}
+.hood-game-start-banner .hood-game-overlay-title{font-family:'IM Fell English',serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#f6d773 !important;-webkit-text-stroke:0 !important;text-shadow:none !important}
+.hood-game-start-banner .hood-game-overlay-lines p{font-family:'IM Fell English',serif;color:#f6d773 !important;opacity:.88 !important;text-shadow:none !important}
+
+#game #gameOverCard{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;width:min(320px,calc(100vw - 32px));max-height:min(310px,calc(100dvh - 24px));gap:10px;padding:16px 20px 14px;border-radius:18px;background:linear-gradient(165deg,rgba(14,28,19,.96) 0%,rgba(7,16,11,.98) 100%);border:1px solid rgba(224,178,58,.4);box-shadow:0 24px 70px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 24px rgba(224,178,58,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:#eaf2e3;font-family:'IM Fell English',serif;text-align:center;animation:settingsPopIn .22s cubic-bezier(.16,1,.3,1) forwards;pointer-events:auto;overflow-y:auto;scrollbar-width:none;z-index:50;margin:0}
+#game #gameOverCard::-webkit-scrollbar{display:none}
+#game #gameOverCard[hidden]{display:none !important}
+.game-over-header{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%}
+.game-over-title{margin:0;padding:0;font:700 24px/1 'IM Fell English',serif;letter-spacing:.08em;text-transform:uppercase;color:#f6d773;text-shadow:none}
+.is-high-score .game-over-title{color:#ffe685;text-shadow:none;animation:none}
+@keyframes pulseGold{0%,100%{text-shadow:0 0 14px rgba(255,218,105,.6)}50%{text-shadow:0 0 24px rgba(255,218,105,.9),0 0 8px #fff}}
+.game-over-subtitle{margin:0;padding:0;font:500 12px/1.3 'IBM Plex Mono',monospace;color:#a1b899;letter-spacing:.02em}
+.game-over-stats{display:flex;align-items:center;justify-content:space-around;width:100%;box-sizing:border-box;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:8px 12px}
+.game-over-stat-box{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+.game-over-stat-label{font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#9cb593;text-transform:uppercase}
+.game-over-stat-value{font:700 24px/1 'Times New Roman',Times,serif;letter-spacing:.02em}
+.game-over-stat-value.current{color:#ffda69;text-shadow:none}
+.game-over-stat-value.best{color:#e5f5df}
+.game-over-stat-divider{width:1px;height:32px;background:rgba(255,255,255,.1)}
+.game-over-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;box-sizing:border-box;margin-top:4px}
+.game-over-btn{box-sizing:border-box;width:100%;height:42px;min-height:42px;margin:0;padding:0 8px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 14px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;touch-action:manipulation;transition:transform .12s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+.game-over-btn:active{transform:scale(.96)}
+.game-over-primary-btn{border:1px solid #ffe39a;background:linear-gradient(135deg,#f5d573,#dba82d);color:#122315;box-shadow:0 4px 14px rgba(224,178,58,.35)}
+.game-over-primary-btn:active{background:#dba82d}
+.game-over-secondary-btn{background:rgba(224,178,58,.12);border:1px solid rgba(224,178,58,.38);color:#ffd978;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.game-over-secondary-btn:active{background:rgba(224,178,58,.25);border-color:rgba(240,200,88,.7)}
+
+/* Event freeze banner (Rugged & Pump) */
+.event-freeze-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  z-index: 60;
+  width: 100%;
+}
+.event-freeze-banner[hidden] {
+  display: none !important;
+}
+.event-freeze-title {
+  margin: 0;
+  padding: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(34px, 9dvh, 48px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.event-freeze-score {
+  margin: 8px 0 0;
+  padding: 0;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: clamp(38px, 11dvh, 56px);
+  letter-spacing: 0.04em;
+}
+.event-freeze-score[hidden] {
+  display: none !important;
+}
+.event-freeze-banner.is-rugged .event-freeze-title {
+  color: #ff3333;
+  font-size: clamp(24px, 6.5vw, 36px);
+  text-shadow: 0 0 16px rgba(255, 51, 51, 0.95), 0 0 32px rgba(255, 51, 51, 0.5);
+  letter-spacing: 0.04em;
+}
+.event-freeze-banner.is-rugged .event-freeze-score {
+  color: #ff3333;
+  text-shadow: 0 0 16px rgba(255, 51, 51, 0.95), 0 0 32px rgba(255, 51, 51, 0.6);
+}
+.event-freeze-banner.is-pump .event-freeze-title {
+  color: #30d158;
+}
+.event-freeze-banner.is-pump .event-freeze-score {
+  color: #30d158;
+  text-shadow: 0 0 16px rgba(48, 209, 88, 0.95), 0 0 32px rgba(48, 209, 88, 0.6);
+}

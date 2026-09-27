@@ -1,0 +1,2148 @@
+:root{
+    --bg: #0c1710;
+    --bg-2: #0f2015;
+    --green-bright: #6fcf3a;
+    --gold: #e8d44d;
+    --bronze: #e3a866;
+    --cream2: #f1eadc;
+    --line: rgba(241,234,220,0.14);
+    --ink: #eef4ea;
+    --ink-dim: rgba(238,244,234,0.62);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 600px at 50% -10%, rgba(90,200,40,0.22), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'IM Fell English',serif;
+    font-size:19px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important;}
+  }
+  a{color:inherit;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px;}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(12,23,16,0.82);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px; max-width:1080px; margin:0 auto;
+  }
+  .brand{display:flex; align-items:center; gap:9px;}
+  .brand-name{
+    font-family:'IM Fell English',serif; font-weight:400; letter-spacing:0.03em; font-size:21px;
+    color:var(--bronze); /* fallback for browsers without background-clip:text */
+    /* Layer 1: cast bronze bar (fixed) — top rim light, mid trough, bottom shadow.
+       Layer 2: a bright diagonal streak that sweeps across on top, giving the
+       polished/glossy reflection. Both layers are clipped to the glyph shapes.
+       Brightened every stop vs. the original pass (lighter trough, lighter
+       base) so the letters read as lit metal rather than dim bronze. */
+    background-image:
+      linear-gradient(115deg, transparent 40%, rgba(255,253,240,1) 50%, transparent 60%),
+      linear-gradient(180deg,
+        #fff8e2 0%, #f8d989 14%, #d29a3e 32%, #8a5c22 52%,
+        #d29a3e 70%, #fadf9e 86%, #a5691f 100%);
+    background-blend-mode:screen, normal;
+    background-size:260% 100%, 100% 100%;
+    background-position:130% 0, 0 0;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    -webkit-text-stroke:0.5px rgba(52,28,6,0.6);
+    filter:
+      drop-shadow(0 1px 0 rgba(255,250,225,0.5))
+      drop-shadow(0 2px 2px rgba(30,16,4,0.5))
+      drop-shadow(0 4px 9px rgba(0,0,0,0.35))
+      drop-shadow(0 0 9px rgba(246,214,133,0.5));
+    animation:brand-shine 3.2s linear infinite;
+    will-change:background-position;
+  }
+  /* One continuous sweep per loop, no hold in the middle -- the previous
+     version paused on a fully-swept (but still visible, mid-gradient)
+     frame for ~40% of the cycle, which read as the animation stalling
+     rather than a deliberate pause. Wrapping straight from -130% back to
+     130% is invisible (the shine band is off past the text on both
+     ends), so the loop reads as one uninterrupted glide. */
+  @keyframes brand-shine{
+    0%{ background-position:130% 0, 0 0; }
+    100%{ background-position:-130% 0, 0 0; }
+  }
+  .brand-logo{
+    width:46px;height:46px;display:block;object-fit:contain;border-radius:50%;
+    filter:
+      drop-shadow(0 0 2px rgba(255,236,205,0.7))
+      drop-shadow(0 0 8px rgba(227,168,102,0.65))
+      drop-shadow(0 0 18px rgba(227,168,102,0.35));
+  }
+
+  .topbar-right{display:flex; align-items:center; gap:10px;}
+  .nav-toggle{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:40px; height:40px; padding:0;
+    background:transparent; border:1.5px solid var(--bronze); border-radius:10px;
+    box-shadow:0 0 6px rgba(227,168,102,0.5), inset 0 0 6px rgba(227,168,102,0.18);
+    color:var(--bronze); font-size:18px; line-height:1; cursor:pointer;
+  }
+  @media(min-width:720px){ .nav-toggle{display:none;} }
+
+  .nav-links{display:none; gap:28px; font-size:17px; font-weight:400; color:var(--ink-dim); font-family:'IM Fell English',serif;}
+  .nav-links.open{
+    display:flex; flex-direction:column; gap:2px;
+    position:absolute; top:100%; left:0; right:0;
+    background:rgba(12,23,16,0.97); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:6px 20px 18px;
+  }
+  .nav-links.open a{padding:12px 4px; border-bottom:1px solid rgba(241,234,220,0.08);}
+  .nav-links.open a:last-child{border-bottom:none;}
+  @media(min-width:720px){
+    .nav-links{display:flex; position:static; flex-direction:row; background:none; backdrop-filter:none; border:0; padding:0;}
+    .nav-links a{padding:0; border-bottom:0;}
+  }
+
+  /* ---------- "More"/"Explore" nav dropdown ---------- */
+  .nav-more{position:relative;}
+  .nav-more-trigger{
+    position:relative;
+    font-family:'IM Fell English',serif; font-size:17px; font-weight:700; color:var(--ink-dim);
+    background:transparent; border:none; padding:0; margin:0; cursor:pointer;
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  /* Two more stars at the button's own corners (top-right/bottom-left),
+     filling out the set from .nav-more-sparkle's two (top-left/bottom-
+     right on the text itself) into four total. Kept on .nav-more-trigger
+     rather than nested inside .nav-more-sparkle -- that element's
+     -webkit-text-fill-color:transparent is inherited by real descendant
+     elements (unlike ::before/::after, which paint their own content
+     independent of it), so nesting more stars in there would need an
+     override just to stay visible. Different size + delay from the other
+     two so all four don't twinkle in lockstep. */
+  .nav-more-trigger::before,
+  .nav-more-trigger::after{
+    content:'✦'; position:absolute; font-size:6px; line-height:1; color:var(--gold);
+    animation:nav-sparkle-twinkle 1.8s ease-in-out infinite;
+  }
+  .nav-more-trigger::before{ top:-7px; right:-2px; animation-delay:0.45s; }
+  .nav-more-trigger::after{ bottom:-7px; left:2px; animation-delay:1.35s; }
+  .nav-more-caret{font-size:11px; line-height:1; transition:transform .2s ease;}
+  .nav-more-trigger[aria-expanded="true"] .nav-more-caret{transform:rotate(180deg);}
+  /* Two small stars twinkle at opposite corners of the label, each on its
+     own offset timer so they never flash in sync. Underlined to match the
+     plain nav links (Lore, Faces, ...), which get the browser's default
+     <a> underline that this <button>-based trigger never had on its own.
+     The shine sweep reuses the brand-name technique -- a diagonal white
+     streak screen-blended over a solid currentColor fill, clipped to the
+     glyphs -- but keyed to currentColor instead of a fixed gradient so it
+     still tracks the dim/gold hover color instead of overriding it. */
+  .nav-more-sparkle{
+    position:relative; text-decoration:underline;
+    background-image:
+      linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.95) 50%, transparent 60%),
+      linear-gradient(0deg, currentColor, currentColor);
+    background-size:220% 100%, 100% 100%;
+    background-position:130% 0, 0 0;
+    background-blend-mode:screen, normal;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:nav-explore-shine 3s linear infinite;
+  }
+  @keyframes nav-explore-shine{
+    0%{ background-position:130% 0, 0 0; }
+    100%{ background-position:-130% 0, 0 0; }
+  }
+  .nav-more-sparkle::before,
+  .nav-more-sparkle::after{
+    content:'✦'; position:absolute; font-size:8px; line-height:1; color:var(--gold);
+    animation:nav-sparkle-twinkle 1.8s ease-in-out infinite;
+  }
+  .nav-more-sparkle::before{ top:-5px; left:-11px; animation-delay:0s; }
+  .nav-more-sparkle::after{ bottom:-5px; right:-11px; animation-delay:0.9s; }
+  @keyframes nav-sparkle-twinkle{
+    0%, 100%{ opacity:0; transform:scale(0.4); }
+    50%{ opacity:1; transform:scale(1); }
+  }
+
+  .nav-more-panel{display:none; flex-direction:column;}
+  .nav-more-panel.open{display:flex;}
+  /* Scoped as ".nav-more .nav-more-item" (not just ".nav-more-item") so its
+     specificity beats ".nav-links a" -- the plain-element selector below
+     that resets every other <a> in the nav to padding:0 at desktop width
+     was winning against a bare class and only the "Soon" locked items
+     (which are <span>, not <a>) were unaffected by it, so links and
+     locked items were landing at different row heights. */
+  .nav-more .nav-more-item{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 14px; border-radius:8px;
+    font-family:'IM Fell English',serif; font-size:16px; color:var(--ink-dim);
+    text-decoration:none; white-space:nowrap;
+  }
+  .nav-more-item.is-locked{color:rgba(238,244,234,0.32); cursor:not-allowed;}
+  /* Shared "Soon" pill -- reused wherever something is locked (nav items,
+     wallet options, the connect/leaderboard CTAs). */
+  .lock-tag{
+    font-family:'IM Fell English',serif; font-size:9px; letter-spacing:0.08em; text-transform:uppercase;
+    color:rgba(238,244,234,0.32); border:1px solid rgba(238,244,234,0.18); border-radius:999px;
+    padding:2px 7px;
+  }
+  .nav-more-item .lock-tag{flex:0 0 auto;}
+
+  /* Mobile: the panel expands inline under the "More" row (indented,
+     left rule) inside the already-open hamburger menu -- a second
+     floating overlay stacked on the first would be confusing to dismiss. */
+  .nav-links.open .nav-more{padding:12px 4px 4px; border-bottom:1px solid rgba(241,234,220,0.08);}
+  .nav-links.open .nav-more:last-child{border-bottom:none;}
+  .nav-links.open .nav-more-trigger{width:100%; justify-content:space-between;}
+  .nav-links.open .nav-more-panel{
+    margin:8px 0 4px 4px; padding-left:14px; border-left:1px solid var(--line);
+  }
+  .nav-links.open .nav-more-item{padding:9px 10px;}
+
+  /* Desktop: a real floating panel below the trigger, matching the
+     mobile menu's own blurred-glass look. */
+  @media(min-width:720px){
+    .nav-more-panel{
+      position:absolute; top:calc(100% + 16px); right:0; z-index:60;
+      min-width:190px; padding:8px; border-radius:14px;
+      background:rgba(12,23,16,0.97); backdrop-filter:blur(10px);
+      border:1px solid var(--line);
+      box-shadow:0 16px 32px rgba(0,0,0,0.45);
+    }
+  }
+
+  .topbar-cta{
+    font-family:'IM Fell English',serif; font-size:16px; font-weight:400;
+    padding:10px 18px; border-radius:999px; min-height:40px;
+    display:inline-flex; align-items:center;
+    color:#12220f; text-decoration:none;
+    white-space:nowrap; transition:transform .15s ease;
+    /* Same belt-and-suspenders clip as .btn-primary below, in case of any
+       corner rasterization seam from the animated background. */
+    background-clip:padding-box;
+    overflow:hidden;
+    /* Layer 1: a bright diagonal streak that sweeps left-to-right on a loop.
+       Layer 2: the button's base color, given a real light-to-rich gradient
+       (not a flat fill) so it still reads as a glossy domed pill even at
+       the instant the streak itself is out of frame. */
+    background-image:
+      linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.85) 50%, transparent 65%),
+      linear-gradient(165deg, #fbf3ad 0%, #f5e77a 45%, #e8ce4f 100%);
+    background-size:220% 100%, 100% 100%;
+    background-position:130% 0, 0 0;
+    background-repeat:no-repeat;
+    animation:btn-shine-sweep 3s linear infinite, btn-glow-pulse-gold 2.4s ease-in-out infinite;
+    will-change:background-position, box-shadow;
+  }
+  /* Below 720px the topbar CTA hides so the brand name has room to stay on
+     one line — the hero's own "Buy $HOODFACE" button covers mobile instead. */
+  @media(max-width:719px){ .topbar-cta{display:none;} }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    padding:64px 20px 40px;
+    text-align:center;
+    overflow:hidden;
+    background-image:
+      linear-gradient(180deg, rgba(12,23,16,0.15) 0%, rgba(12,23,16,0.35) 55%, var(--bg) 100%),
+      url('hero-bg.webp');
+    background-size:cover;
+    background-position:center bottom;
+    background-repeat:no-repeat;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(111,207,58,0.05) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(0deg, rgba(111,207,58,0.05) 0 1px, transparent 1px 64px);
+    mask-image: radial-gradient(600px 400px at 50% 20%, black, transparent 75%);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--green-bright); margin-bottom:22px; display:inline-flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before,.eyebrow::after{content:"";width:22px;height:1px;background:var(--green-bright); opacity:0.6;}
+
+  .medallion-wrap{
+    position:relative; width:230px; height:230px; margin:0 auto 26px;
+  }
+
+  h1.headline{
+    font-family:'IM Fell English',serif; font-weight:400;
+    font-size:clamp(38px, 9.5vw, 64px);
+    line-height:1.08; margin:0 0 16px;
+    color:var(--cream2);
+  }
+  h1.headline .accent{color:var(--green-bright);}
+  .sub{
+    max-width:480px; margin:0 auto 30px; color:var(--ink-dim);
+    font-size:20px; line-height:1.55;
+  }
+  .cta-row{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:34px;}
+  .btn{
+    font-family:'IM Fell English',serif; font-weight:400; font-size:18px;
+    padding:14px 26px; border-radius:12px; text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid transparent; transition:transform .15s ease, box-shadow .15s ease;
+    /* .btn was always an <a> before the wallet-connect trigger -- these
+       reset a real <button>'s browser chrome (font/background/cursor)
+       back to matching an anchor, so it's pixel-identical either way. */
+    background:none; cursor:pointer;
+  }
+  .btn:active{transform:scale(0.97);}
+  /* Only meaningful for the one <button> among .btn's uses -- setConnectLabel()
+     disables it for "Connecting…"/"Connected ✓". Dims it the same way
+     .wallet-option:disabled already dims an unavailable wallet row. */
+  .btn:disabled{opacity:0.6; cursor:not-allowed;}
+  .btn-primary{
+    color:#0d1a0f;
+    /* No border -- tried a gold one at 2px then 1px, dropped per feedback.
+       With no border there's no ring for a transparent border to expose,
+       so the earlier black-gap bug (from background-clip:padding-box
+       showing bare page background through a *transparent* border) can't
+       come back either. overflow:hidden stays: with an animated background
+       repainting every frame, the border-box's rounded corner and the
+       background's own rounded clip can rasterize a hair out of sync,
+       showing a thin gap at the curve -- this is still the belt-and-
+       suspenders clip for that. */
+    border:none;
+    overflow:hidden;
+    /* richer top-to-bottom spread than the old 2-stop gradient (#8be85a and
+       --green-bright are close in value, so it read almost flat whenever
+       the shine streak below wasn't in frame) so the button always looks
+       domed/glossy, animation aside. */
+    background-image:
+      linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.8) 50%, transparent 65%),
+      linear-gradient(165deg, #b6f57e 0%, #8be85a 40%, var(--green-bright) 100%);
+    background-size:220% 100%, 100% 100%;
+    background-position:130% 0, 0 0;
+    background-repeat:no-repeat;
+    animation:btn-shine-sweep 3s linear infinite, btn-glow-pulse-green 2.4s ease-in-out infinite;
+    will-change:background-position, box-shadow;
+  }
+  /* Shared by both "Buy $HOODFACE" buttons — continuous left-to-right glint,
+     no hold in the middle (same lesson as brand-shine: a dwell on a visible
+     mid-sweep frame reads as the animation stalling, not resting). */
+  @keyframes btn-shine-sweep{
+    0%{ background-position:130% 0, 0 0; }
+    100%{ background-position:-130% 0, 0 0; }
+  }
+  /* Breathing glow — box-shadow intensity rises and falls on its own loop,
+     independent of the shine sweep above (different property, so both
+     animations run concurrently with no conflict). Symmetric 0%/50%/100%
+     keyframes mean prefers-reduced-motion (which collapses every animation
+     to one near-instant pass) still settles on a normal, calm-glow frame
+     rather than freezing mid-pulse. */
+  @keyframes btn-glow-pulse-gold{
+    0%, 100%{ box-shadow:0 2px 10px -4px rgba(245,231,122,0.35), 0 0 8px 0 rgba(245,231,122,0.25); }
+    50%{ box-shadow:0 4px 20px -4px rgba(245,231,122,0.75), 0 0 24px 4px rgba(245,231,122,0.6); }
+  }
+  @keyframes btn-glow-pulse-green{
+    /* third layer is a static inner rim-light along the top edge -- same in
+       both keyframes so it doesn't pulse, just adds a glossy highlight
+       catching the gold border. */
+    0%, 100%{ box-shadow:0 10px 24px -10px rgba(111,207,58,0.45), 0 0 8px 0 rgba(111,207,58,0.2), inset 0 1px 0 rgba(255,246,217,0.5); }
+    50%{ box-shadow:0 10px 30px -8px rgba(111,207,58,0.85), 0 0 26px 5px rgba(111,207,58,0.55), inset 0 1px 0 rgba(255,246,217,0.5); }
+  }
+  .btn-ghost{
+    background:transparent; border-color:var(--line); color:var(--ink);
+  }
+  .btn-ghost.is-locked{
+    color:rgba(238,244,234,0.32); border-color:rgba(238,244,234,0.18);
+    cursor:not-allowed;
+  }
+  /* Per request, "See your rank" keeps its full active look (green fill,
+     left-to-right shine sweep, pulsing glow) even locked -- only the
+     cursor changes, plus the "Soon" tag sitting on top makes clear it's
+     not clickable. Unlike .btn-ghost.is-locked (Your perks), which stays
+     visually muted. */
+  .btn-primary.is-locked{cursor:not-allowed;}
+  /* The default .lock-tag (near-white at low opacity) all but disappears
+     on the bright green fill -- bronze instead, reading clearly against
+     the green. */
+  /* font-weight:700 alone is a browser-synthesized bold (IM Fell English
+     only ships a regular cut) and barely reads as heavier at 9px --
+     -webkit-text-stroke thickens the glyph strokes on top of that. */
+  .btn-primary.is-locked .lock-tag{
+    color:var(--bronze); border-color:var(--bronze); font-weight:700;
+    -webkit-text-stroke:0.4px var(--bronze);
+  }
+  /* Same breakpoint as .topbar-cta's own hide above, same swap: on a phone
+     there's no topbar Buy button to fall back on, so the hero leads with
+     "Buy $HOODFACE" instead of "Copy contract". Both are plain .btn-primary
+     buttons in the DOM the whole time -- this only ever hides one of the
+     two, never both. (Placed after .btn's own display:inline-flex, not
+     before -- equal-specificity rules resolve by source order regardless
+     of which is behind a media query, so declaring this earlier let .btn
+     win at every width and silently no-op both hides.) */
+  @media(max-width:719px){ .hero-copy-btn{display:none;} }
+  @media(min-width:720px){ .hero-buy-btn{display:none;} }
+  /* ---------- section shells ---------- */
+  section{padding:96px 20px;}
+  .section-head{max-width:640px; margin:0 auto 48px; text-align:center;}
+  .kicker{
+    font-family:'IM Fell English',serif; font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:10px;
+  }
+  h2.section-title{
+    font-family:'IM Fell English',serif; font-weight:400; font-size:clamp(29px,6vw,42px);
+    margin:0 0 12px; color:var(--cream2);
+  }
+  .section-desc{color:var(--ink-dim); font-size:19px; line-height:1.6; margin:0;}
+
+  /* ---------- lore ---------- */
+  .lore-card{
+    max-width:680px; margin:0 auto; padding:36px 32px;
+    background:rgba(111,207,58,0.05);
+    border:1px solid rgba(232,212,77,0.45); border-radius:28px;
+    box-shadow:inset 0 0 0 4px rgba(12,23,16,0.9), inset 0 0 0 5px rgba(111,207,58,0.35),
+      0 0 26px -8px rgba(111,207,58,0.35);
+    position:relative;
+    transition:box-shadow .2s ease, border-color .2s ease;
+  }
+  .lore-card::before{
+    content:"🏹"; position:absolute; top:-16px; left:24px; font-size:22px;
+    background:var(--bg-2); border:1px solid var(--gold); width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .lore-card p{color:var(--ink-dim); line-height:1.75; font-size:19px; margin:0 0 14px;}
+  .lore-card p:last-child{margin-bottom:0;}
+  .lore-card strong{color:var(--cream2);}
+
+  /* ---------- gallery ---------- */
+  .gallery-wrap{overflow-x:hidden; overflow-y:visible; position:relative;}
+  /* Widened from a thin 60px edge hint to a real vignette -- a whole row of
+     bright cards whipping by (especially mid-spin) reads as busy/glare-y;
+     fading everything outside roughly the middle 3 cards down toward the
+     page background keeps focus on the center without hard-cutting
+     anything (still just a color wash, so nothing is actually clipped). */
+  .gallery-wrap::before, .gallery-wrap::after{
+    content:""; position:absolute; top:0; bottom:0; width:32%; z-index:2; pointer-events:none;
+  }
+  .gallery-wrap::before{left:0; background:linear-gradient(90deg, var(--bg) 0%, var(--bg) 45%, transparent 100%);}
+  .gallery-wrap::after{right:0; background:linear-gradient(270deg, var(--bg) 0%, var(--bg) 45%, transparent 100%);}
+  .gallery-track{
+    display:flex; gap:26px; width:max-content;
+    animation:gscroll 42s linear infinite;
+    /* .gallery-wrap sets overflow-x:hidden -- per the CSS overflow spec,
+       pairing that with overflow-y:visible on the same element doesn't
+       actually stay "visible": the browser computes it to "auto" instead,
+       so anything popping up above the row (hover's translateY(-8px), the
+       is-lit spin glow) really is clipped by that top edge, not just
+       visually crowded. There's no way around that quirk on the clipping
+       element itself, so the real fix is padding: enough room here that
+       neither effect ever needs to cross it.
+       Top padding sized for the taller of the two: hover's translateY(-8px)
+       + its own scale(1.06) growth + shadow blur needs ~27px; is-lit's
+       glow (scale(1.06), shadow biased downward) needs ~21px. */
+    padding:44px 0 56px;
+  }
+  .gallery-wrap:hover .gallery-track, .gallery-wrap:active .gallery-track{animation-play-state:paused;}
+  @keyframes gscroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  .face-card{
+    /* One border, not the inset ring + outer border pair this used to
+       stack (they read as two concentric outlines in different colors --
+       gold on the outside, green just inside it). Every state below drops
+       the inset ring and keeps only this border plus a soft outer glow. */
+    width:188px; flex:0 0 auto;
+    background:rgba(111,207,58,0.04); border:1px solid rgba(232,212,77,0.4); border-radius:24px;
+    padding:18px 14px 16px; text-align:center; position:relative; z-index:1;
+    transition:border-color .25s ease, box-shadow .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .face-img{
+    display:block; width:100%; aspect-ratio:1/1; object-fit:contain;
+    margin-bottom:10px;
+  }
+  .face-label{
+    font-family:'IM Fell English',serif; font-size:16px; color:var(--ink-dim); letter-spacing:0.01em;
+    transition:color .25s ease;
+  }
+  /* Face of the Day only: no fixed marker in the gallery -- js/face-draw.js
+     tracks whichever card is actually passing through .gallery-wrap's exact
+     center, live, and lights that card itself up instead. Transform is on
+     its own transition (border/shadow already animate on hover above) so a
+     rapid light-to-light handoff during a fast spin still looks crisp. */
+  .face-card.is-lit{
+    border-color:var(--gold);
+    /* Outer glow's y-offset biases it downward -- the row only has 24px of
+       top padding to grow into (vs. 56px at the bottom), so a symmetric
+       glow got its top edge clipped there. Pushing the shadow down instead
+       of just shrinking it keeps the glow looking full, just settled lower
+       around the card rather than centered on it. */
+    box-shadow:0 8px 20px 2px rgba(232,212,77,0.55);
+    transform:scale(1.06);
+    z-index:2;
+  }
+  .face-card.is-lit .face-label{color:var(--gold);}
+  .fod-row{display:flex; justify-content:center; margin-top:22px;}
+  /* SPIN: always-on shine, not just on hover -- same gold gradient + sweep +
+     pulse .topbar-cta already uses (both keyframes above), just on a real
+     <button> sized like the rest of .btn. */
+  .btn-spin{
+    color:#12220f; border:none; overflow:hidden; background-clip:padding-box;
+    background-image:
+      linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.85) 50%, transparent 65%),
+      linear-gradient(165deg, #fbf3ad 0%, #f5e77a 45%, #e8ce4f 100%);
+    background-size:220% 100%, 100% 100%;
+    background-position:130% 0, 0 0;
+    background-repeat:no-repeat;
+    animation:btn-shine-sweep 3s linear infinite, btn-glow-pulse-gold 2.4s ease-in-out infinite;
+    will-change:background-position, box-shadow;
+    letter-spacing:0.06em;
+  }
+  .fod-message{
+    text-align:center; margin-top:12px; font-size:13px; color:var(--ink-dim); font-family:'IM Fell English',serif;
+  }
+
+  /* ---------- play: game + gacha folded into one tabbed module ----------
+     #game and #faces used to be their own full-height sections back to
+     back -- same rhythm twice in a row. They're unchanged internally
+     (js/dino-game.js and js/face-draw.js still query the same ids), just
+     no longer <section> elements themselves so they stop picking up the
+     generic section{padding} rule; #play carries that now. Switching tabs
+     doesn't pause either module (see js/play-tabs.js's comment on why),
+     so the tab that would interrupt a live run or an in-flight spin is
+     disabled for as long as that's true, rather than hiding a run out
+     from under the player. */
+  .tabs{display:flex; justify-content:center; gap:8px; margin-bottom:32px; flex-wrap:wrap;}
+  .tab-btn{
+    font-family:'IM Fell English',serif; font-size:16px; color:var(--ink-dim);
+    background:rgba(238,244,234,0.04); border:1px solid var(--line); border-radius:999px;
+    padding:11px 24px; cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .tab-btn.is-active{color:#12220f; background:var(--green-bright); border-color:var(--green-bright); font-weight:600;}
+  .tab-btn:disabled{cursor:not-allowed; opacity:0.5;}
+  .tab-panel[hidden]{display:none;}
+
+  /* ---------- face draw overlay ----------
+     Opened by the SPIN button once its gallery spin (js/face-draw.js,
+     .face-card.is-lit above) lands on a winner, which then flips
+     .face-draw-card-inner to reveal the joke on the back. Structurally a
+     near-twin of .wallet-modal (fixed overlay, backdrop blur, Escape,
+     backdrop click) so it reads as the same kind of surface as the rest of
+     the site rather than a one-off -- no X button, closing is backdrop
+     click or Escape only, per request. */
+  .face-draw-overlay{position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .face-draw-overlay[hidden]{display:none;}
+  .face-draw-backdrop{position:absolute; inset:0; background:rgba(2,6,3,0.82); backdrop-filter:blur(8px);}
+  .face-draw-stage{position:relative; z-index:1; perspective:1400px;}
+
+  .face-draw-card{
+    /* Tier accent, in one place: border, the inner ring, the fill tint and
+       the outer glow all read off these four custom properties, and
+       .face-draw-front/.face-draw-back (further down) both consume them
+       the same way. That's what keeps every tier's two faces matching --
+       previously the back never varied by tier at all, and the front's
+       fill didn't either, only its border/glow did. Normal (no rarity
+       class) is the default set here: a plain gray, not a color -- and no
+       glow at all, per instruction, so a plain pull reads as visibly
+       ungraded next to one that lit up. Front and back still share these
+       same four values, so they stay identical to each other. */
+    --fr-border: rgba(200,205,198,0.4);
+    --fr-ring: rgba(200,205,198,0.28);
+    --fr-fill: rgba(200,205,198,0.08);
+    --fr-glow: transparent;
+    position:relative; width:min(300px, 78vw); aspect-ratio:3/4;
+    opacity:1; transition:opacity .4s ease;
+  }
+  /* Toggled on/off around a reflow (js/face-draw.js) to fade the card in
+     once the overlay backdrop's already up -- a beat of empty backdrop
+     before the card itself appears, rather than both popping in at once. */
+  .face-draw-card.is-revealing{ opacity:0; }
+  .face-draw-card-inner{
+    position:relative; width:100%; height:100%;
+    transform-style:preserve-3d; transition:transform .5s cubic-bezier(.4,.1,.2,1);
+  }
+  .face-draw-face{
+    position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    border-radius:26px; padding:26px 22px; display:flex; flex-direction:column; align-items:center; text-align:center;
+    border:1px solid var(--fr-border);
+    box-shadow:inset 0 0 0 3px rgba(12,23,16,0.9), inset 0 0 0 4px var(--fr-ring),
+      0 0 40px -6px var(--fr-glow), 0 30px 70px -12px rgba(0,0,0,0.75);
+    /* Safety net on top of backface-visibility above: .face-draw-card's own
+       opacity transition (the fade-in) sits directly above this 3D-rotated
+       pair, and an ancestor's opacity is a known trigger for some WebKit
+       builds to render the "hidden" face's mirrored content through
+       instead of actually hiding it. visibility:hidden is a hard guarantee
+       backface-visibility alone apparently isn't everywhere -- delayed so
+       it only kicks in once the flip has genuinely carried the face past
+       edge-on, not cutting into the normal rotation partway through. */
+    transition:visibility 0s linear .2s;
+  }
+  .face-draw-card-inner.is-flipped .face-draw-front{ visibility:hidden; }
+  .face-draw-card-inner:not(.is-flipped) .face-draw-back{ visibility:hidden; }
+  .face-draw-front{
+    justify-content:flex-start;
+    background:radial-gradient(120% 90% at 50% 0%, var(--fr-fill), #071009);
+  }
+  .face-draw-img{width:78%; aspect-ratio:1/1; object-fit:contain; margin:14px 0 16px;}
+
+  /* ---------- Face of the Day rarity shine ----------
+     js/face-draw.js sets one of these on .face-draw-card (via
+     js/face-rarity.js's mood -> tier map) once a draw lands; a "normal"
+     pull gets none of them and both faces stay on the default tokens set
+     above. Each tier rule below only overrides --fr-border/--fr-ring/
+     --fr-fill/--fr-glow -- .face-draw-face (both faces) and .face-draw-
+     front/.face-draw-back (their own gradient direction) read off those,
+     so border, fill and glow always move together and front/back always
+     match. The mythic rainbow tint (::after below) stays front-only --
+     it's a moving/decorative layer, not part of the base tier color.
+     The animated sweep (the moving light streak) is TEMPORARILY DISABLED
+     -- reports of visible stutter/hitching survived a full reset to a
+     single continuous CSS animation, so it's off for now rather than
+     kept half-working. The sweep rules (background/background-size/
+     animation) are commented out below, along with their now-unused
+     @keyframes, so re-enabling later is a matter of un-commenting rather
+     than rebuilding from scratch. */
+  .face-draw-front::after{
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  }
+  .face-draw-card.rarity-legendary .face-draw-face,
+  .face-draw-card.rarity-mythic .face-draw-face,
+  .face-draw-card.rarity-silver .face-draw-face,
+  .face-draw-card.rarity-bronze .face-draw-face{
+    border-width:2px;
+  }
+  .face-draw-card.rarity-legendary{
+    --fr-border: var(--gold);
+    --fr-ring: rgba(232,212,77,0.45);
+    --fr-fill: rgba(232,212,77,0.18);
+    --fr-glow: rgba(232,212,77,0.85);
+  }
+  /* Sweep layer disabled -- see the note above the rarity shine block.
+  .face-draw-card.rarity-legendary .face-draw-front::after{
+    opacity:0.5;
+    background:linear-gradient(115deg,
+      transparent 41%, rgba(255,244,200,0.2) 45%, rgba(255,251,235,0.98) 48%,
+      rgba(255,215,80,0.98) 50%, rgba(255,244,200,0.2) 55%, transparent 59%);
+    background-size:220% 220%;
+    animation:fr-sheen-sweep-2200 3.7s linear infinite;
+  }
+  .face-draw-card.rarity-legendary .face-draw-front::before{
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    opacity:0.5;
+    background:linear-gradient(115deg, transparent 48.5%, rgba(255,255,255,0.9) 50%, transparent 51.5%);
+    background-size:280% 280%;
+    animation:fr-sheen-sweep-2200 3.7s linear infinite .35s;
+    mix-blend-mode:screen;
+  }
+  */
+  .face-draw-card.rarity-mythic{
+    --fr-border: rgba(180,120,255,0.9);
+    --fr-ring: rgba(180,120,255,0.4);
+    --fr-fill: rgba(180,120,255,0.16);
+    --fr-glow: rgba(180,120,255,0.75);
+  }
+  .face-draw-card.rarity-mythic .face-draw-front::after{
+    /* screen only ever brightens (never darkens), so the art's own shapes
+       stay legible while the rainbow still actually reads as a rainbow --
+       overlay at higher opacity looked more like a plain tinted glow.
+       background-size cut from 400% to 200% -- at 400% only a quarter of
+       the gradient's color range ever fits in the card at once, so it
+       read as a slow single-hue tint drifting rather than an actual
+       multi-color rainbow; at 200% (with the keyframe end below matching
+       it) about half the spectrum shows simultaneously. Static -- not a
+       sweep -- so this layer is unaffected by the sweep disable above. */
+    opacity:0.21; mix-blend-mode:screen;
+    background:linear-gradient(120deg, #ff5e5e, #ffb84d, #fff36e, #6effa1, #5ec8ff, #a26bff, #ff5ec8, #ff5e5e);
+    background-size:200% 200%;
+    background-position:30% 50%;
+  }
+  /* Sweep layer disabled -- see the note above the rarity shine block.
+  .face-draw-card.rarity-mythic .face-draw-front::before{
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    opacity:0.5;
+    background:linear-gradient(115deg, transparent 47.5%, rgba(255,255,255,0.85) 50%, transparent 52.5%);
+    background-size:260% 260%;
+    animation:fr-sheen-sweep-2600 4.1s linear infinite .5s;
+    mix-blend-mode:screen;
+  }
+  */
+  .face-draw-card.rarity-silver{
+    --fr-border: #cfd8dc;
+    --fr-ring: rgba(207,216,220,0.4);
+    --fr-fill: rgba(207,216,220,0.14);
+    --fr-glow: rgba(207,216,220,0.65);
+  }
+  /* Sweep layer disabled -- see the note above the rarity shine block.
+  .face-draw-card.rarity-silver .face-draw-front::after{
+    opacity:0.5;
+    background:linear-gradient(115deg,
+      transparent 41%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.95) 48%,
+      rgba(207,216,220,0.9) 50%, rgba(255,255,255,0.25) 55%, transparent 59%);
+    background-size:220% 220%;
+    animation:fr-sheen-sweep-2600 4.1s linear infinite;
+  }
+  */
+  .face-draw-card.rarity-bronze{
+    --fr-border: var(--bronze);
+    --fr-ring: rgba(227,168,102,0.4);
+    --fr-fill: rgba(227,168,102,0.14);
+    --fr-glow: rgba(227,168,102,0.6);
+  }
+  /* Sweep layer disabled -- see the note above the rarity shine block.
+  .face-draw-card.rarity-bronze .face-draw-front::after{
+    opacity:0.5;
+    background:linear-gradient(115deg,
+      transparent 41%, rgba(240,205,160,0.2) 45%, rgba(255,235,205,0.9) 48%,
+      rgba(227,168,102,0.9) 50%, rgba(240,205,160,0.2) 55%, transparent 59%);
+    background-size:220% 220%;
+    animation:fr-sheen-sweep-3000 4.5s linear infinite;
+  }
+  @keyframes fr-sheen-sweep-2200{
+    0%{background-position:130% 0;}
+    59.46%{background-position:-130% 0;}
+    100%{background-position:-130% 0;}
+  }
+  @keyframes fr-sheen-sweep-2600{
+    0%{background-position:130% 0;}
+    63.41%{background-position:-130% 0;}
+    100%{background-position:-130% 0;}
+  }
+  @keyframes fr-sheen-sweep-3000{
+    0%{background-position:130% 0;}
+    66.67%{background-position:-130% 0;}
+    100%{background-position:-130% 0;}
+  }
+  */
+  .face-draw-mood{font-family:'IM Fell English',serif; font-size:22px; color:var(--cream2);}
+  /* Tap-to-reveal replaced the old auto-flip timer -- the whole card is
+     clickable (js/face-draw.js), and stays clickable after the flip too
+     (tapping the back flips it back to the front), so the pointer cursor
+     never needs to drop back to default. */
+  .face-draw-card{cursor:pointer;}
+  .face-draw-tap-hint{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--gold); opacity:0.75; margin-top:10px;
+    animation:tap-hint-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes tap-hint-pulse{
+    0%, 100%{opacity:0.5;}
+    50%{opacity:0.95;}
+  }
+  .face-draw-back{
+    transform:rotateY(180deg);
+    justify-content:center; gap:14px;
+    background:radial-gradient(120% 90% at 50% 100%, var(--fr-fill), #0c1710);
+  }
+  .face-draw-back-kicker{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+  }
+  .face-draw-joke{
+    font-family:'IM Fell English',serif; font-style:italic; font-size:19px; line-height:1.45; color:var(--ink);
+    margin:0;
+  }
+  .face-draw-actions{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:6px;}
+  .face-draw-share{
+    padding:9px 16px; border-radius:999px; cursor:pointer;
+    font-family:'IM Fell English',serif; font-size:14px;
+    transition:border-color .15s ease, background .15s ease, color .15s ease, opacity .15s ease;
+    color:var(--cream2);
+    background:rgba(238,244,234,0.06); border:1px solid rgba(238,244,234,0.25);
+  }
+
+
+  /* ---------- ledger / tokenomics ---------- */
+  .ledger{
+    max-width:560px; margin:0 auto; border:1px solid rgba(232,212,77,0.45); border-radius:24px;
+    overflow:hidden; background:rgba(111,207,58,0.04);
+    box-shadow:inset 0 0 0 3px rgba(12,23,16,0.9), inset 0 0 0 4px rgba(111,207,58,0.3),
+      0 0 26px -6px rgba(111,207,58,0.45);
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .ledger-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 20px; border-bottom:1px dashed var(--line);
+    font-family:'IM Fell English',serif; font-size:18px;
+  }
+  .ledger-row:last-child{border-bottom:none;}
+  .ledger-row .k{color:var(--ink-dim);}
+  .ledger-row .v{color:var(--cream2); font-weight:600;}
+  .ledger-row .v.pending{color:var(--gold);}
+
+  /* ---------- ledger-strip: the same rows, laid out as a compact row of
+     chips instead of a tall stacked card. Pulled up near the top of the
+     page (right after Play), so the trust numbers -- 0% team above all --
+     read in the two seconds before someone decides whether to scroll
+     further, instead of waiting near the bottom of the old order. No
+     markup or copy changed: same .ledger-row/.k/.v pairs js/copy.js
+     already wires up, just re-flowed. column-reverse puts .v (the value,
+     second in the DOM) on top and .k (the label) below it without
+     touching source order. (The contract address used to live here as a
+     6th, full-width row -- moved to the hero's "Copy contract" button
+     instead, since a raw 0x address read badly as a ledger chip.) */
+  .ledger.ledger-strip{
+    /* 5 rows (Supply/Chain/Tax/LP/Team) don't divide evenly into every
+       column count, so 1 and 5 are the two breakpoints picked
+       deliberately: both leave every cell filled, with no dangling empty
+       grid cell reading as a UI bug. The intermediate 2-column width
+       between them is the one range that can't avoid a partial last row. */
+    display:grid; grid-template-columns:1fr; gap:1px;
+    background:var(--line); border:1px solid rgba(232,212,77,0.45); border-radius:20px; overflow:hidden;
+    max-width:960px; box-shadow:0 0 26px -6px rgba(111,207,58,0.35);
+  }
+  @media(min-width:560px){ .ledger.ledger-strip{grid-template-columns:repeat(2,1fr);} }
+  @media(min-width:900px){ .ledger.ledger-strip{grid-template-columns:repeat(5,1fr);} }
+  .ledger.ledger-strip .ledger-row{
+    display:flex; flex-direction:column-reverse; align-items:flex-start; gap:5px;
+    border-bottom:none; background:var(--bg-2); padding:20px 22px;
+  }
+  .ledger.ledger-strip .ledger-row .k{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-dim);
+  }
+  .ledger.ledger-strip .ledger-row .v{font-size:19px;}
+
+  /* ---------- roadmap trail ---------- */
+  .trail{max-width:560px; margin:0 auto; position:relative; padding-left:26px;}
+  .trail::before{
+    content:""; position:absolute; left:9px; top:6px; bottom:6px; width:2px;
+    background:linear-gradient(180deg, var(--green-bright), var(--gold), var(--green-bright));
+    opacity:0.5;
+  }
+  .trail-step{position:relative; padding-bottom:34px;}
+  .trail-step:last-child{padding-bottom:0;}
+  .trail-dot{
+    position:absolute; left:-26px; top:2px; width:20px; height:20px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--green-bright);
+    display:flex; align-items:center; justify-content:center; font-size:10px;
+  }
+  .trail-step.active .trail-dot{background:var(--green-bright); box-shadow:0 0 0 4px rgba(111,207,58,0.18);}
+  .trail-step.done .trail-dot{background:var(--green-bright); border-color:var(--green-bright); color:var(--bg); font-weight:700;}
+  .trail-phase{font-family:'IM Fell English',serif; font-size:11px; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:4px;}
+  .trail-title{font-family:'IM Fell English',serif; font-weight:400; font-size:20px; color:var(--cream2); margin-bottom:6px;}
+  .trail-desc{color:var(--ink-dim); font-size:17px; line-height:1.6;}
+
+  /* ---------- trail-row: the same four steps, side by side instead of a
+     tall dotted timeline. Same .trail-step/.trail-dot/.trail-phase/
+     .trail-title/.trail-desc markup and done/active state classes --
+     just re-flowed into cards, so nothing about which phase is marked
+     done/active/upcoming has to be duplicated or kept in sync. */
+  .trail.trail-row{
+    max-width:1080px; padding-left:0;
+    display:grid; grid-template-columns:repeat(2,1fr); gap:16px;
+  }
+  @media(min-width:860px){ .trail.trail-row{grid-template-columns:repeat(4,1fr);} }
+  .trail.trail-row::before{display:none;}
+  .trail.trail-row .trail-step{
+    padding:22px 18px; border:1px solid var(--line); border-radius:16px; background:rgba(238,244,234,0.02);
+  }
+  .trail.trail-row .trail-step.done{border-color:rgba(111,207,58,0.35);}
+  .trail.trail-row .trail-step.active{border-color:var(--gold); background:rgba(232,212,77,0.05);}
+  .trail.trail-row .trail-dot{position:static; margin:0 0 12px;}
+  .trail.trail-row .trail-title{font-size:19px;}
+  .trail.trail-row .trail-desc{font-size:14.5px; line-height:1.55;}
+
+  /* ---------- wallet page hero (functions/wallet.html) ---------- */
+  .rank-hero-section{max-width:1000px; margin:0 auto;}
+  /* Below ~480px the "See your rank"/"Your perks" pair no longer fits on
+     one line and wraps to two short, left-aligned pills with a lot of
+     dead space beside each -- stack them full-width instead, which also
+     gives each a bigger, easier tap target. */
+  @media(max-width:479px){
+    #holders .cta-row{flex-direction:column; align-items:stretch;}
+    #holders .cta-row .btn{width:100%; justify-content:center;}
+  }
+  .rank-badge-row{
+    display:flex; align-items:center; flex-wrap:wrap; gap:10px;
+    margin:-8px 0 12px;
+  }
+  /* Chain divider -- sits under the stats grid as a closing line for the
+     section rather than a bordered pill; the frame is gone, replaced by
+     two fading glow lines flanking the label -- solid/bright where they
+     meet the text, fading to nothing at the outer tip (drop-shadow blur
+     follows the gradient's alpha, so the glow itself thins out along with
+     the line rather than staying a uniform halo). Same overall length as
+     the earlier vine version: capped at 50% width once there's room
+     (>=640px), full-width with a min-width per side below that so they
+     don't get crushed next to the label on mobile. */
+  .rank-chain-divider{
+    display:flex; align-items:center; gap:14px; margin:56px auto 0;
+    max-width:100%;
+  }
+  @media(min-width:640px){
+    .rank-chain-divider{ max-width:50%; }
+  }
+  .rank-chain-line{
+    flex:1 1 20px; min-width:20px; height:2px; border-radius:999px;
+    filter:drop-shadow(0 0 5px rgba(111,207,58,0.8)) drop-shadow(0 0 2px rgba(214,255,170,0.9));
+  }
+  .rank-chain-line-left{
+    background:linear-gradient(to left, rgba(111,207,58,0.95) 0%, rgba(111,207,58,0) 100%);
+  }
+  .rank-chain-line-right{
+    background:linear-gradient(to right, rgba(111,207,58,0.95) 0%, rgba(111,207,58,0) 100%);
+  }
+  .rank-chain-badge{
+    display:inline-flex; align-items:center; gap:6px; max-width:max-content;
+    font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--green-bright); white-space:nowrap;
+  }
+  /* Doubles as the Buy $HOODFACE link. Deliberately keeps the plain badge
+     look -- no underline -- so the row still reads as status rather than a
+     button; the aria-label carries the destination, since "Token live" on
+     its own would not tell a screen reader where the link goes. Worth
+     having here because .topbar-cta, the site's other Buy button, is
+     display:none under 720px, so on a phone this page had no way to buy. */
+  .rank-live-badge{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--green-bright); padding:6px 2px;
+    text-decoration:none; transition:color 0.15s ease;
+  }
+  .rank-live-dot{
+    width:8px; height:8px; border-radius:50%; flex:none;
+    background:var(--green-bright); box-shadow:0 0 6px rgba(111,207,58,0.85);
+    animation:rank-live-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes rank-live-pulse{
+    0%, 100%{ opacity:1; }
+    50%{ opacity:0.25; }
+  }
+  .rank-hero-grid{
+    display:grid; grid-template-columns:1fr; gap:36px; align-items:center;
+  }
+  @media(min-width:860px){
+    .rank-hero-grid{grid-template-columns:1.05fr 0.95fr; gap:48px;}
+  }
+  .rank-hero-art{
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .rank-hero-art img{
+    width:100%; max-width:270px; height:auto; object-fit:contain;
+    animation:hf-glow-pulse 4s ease-in-out infinite;
+  }
+  /* Fills its grid column at the desktop two-up layout (~430px wide)
+     rather than floating small inside it. */
+  @media(min-width:860px){ .rank-hero-art img{max-width:378px;} }
+  /* Twinkling stars scattered around the treasure scene -- each one's
+     position/delay set inline (one-off per-instance values, same pattern
+     as the ladder tier color custom props) so they land near the chest's
+     light beam and scattered coins rather than a generic grid. */
+  .hero-sparkle{
+    position:absolute; font-size:15px; color:var(--gold);
+    text-shadow:0 0 6px rgba(232,212,77,0.85), 0 0 12px rgba(232,212,77,0.5);
+    animation:hero-sparkle-twinkle 2.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes hero-sparkle-twinkle{
+    0%, 100%{ opacity:0; transform:scale(0.4); }
+    50%{ opacity:1; transform:scale(1); }
+  }
+  @keyframes hf-glow-pulse{
+    0%, 100%{ filter:drop-shadow(0 0 20px rgba(232,212,77,0.28)); }
+    50%{ filter:drop-shadow(0 0 40px rgba(232,212,77,0.55)); }
+  }
+
+  /* ---------- holder check (result panel, shown inside the wallet modal) ----------
+     --tier-color is set inline on #holderResult by wallet-connect.js, from
+     wallet-utils.js's tierColorVar() -- the same gold/green/bronze/cream/dim
+     ladder already used to color each row of the ladder page (explore/wallet
+     /ladder), so a connected wallet reads as the same rank system rather
+     than a different one that happens to share tier names. Every rule below
+     falls back to the plain green theme when it's unset, so nothing here
+     depends on the property actually being there. */
+  .rank-hero{
+    padding:6px 0 14px;
+    display:flex; align-items:center; gap:16px; margin-bottom:18px;
+  }
+  .rank-hero-icon{
+    flex:0 0 auto; width:56px; height:56px; padding:3px; border-radius:50%; box-sizing:border-box;
+    background:conic-gradient(from 200deg, var(--tier-color, var(--green-bright)), rgba(255,255,255,0.12), var(--tier-color, var(--green-bright)));
+  }
+  .rank-hero-icon-inner{
+    width:100%; height:100%; border-radius:50%; background:#07150c;
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+  }
+  /* 78%, not 100% -- the tier art (icons/tiers/*.webp) is a character
+     illustration with its own transparent margin, drawn to sit inset like
+     the emoji it replaced rather than fill the circle edge-to-edge like an
+     avatar crop. */
+  .rank-hero-icon-img{width:78%; height:78%; object-fit:contain;}
+  .rank-hero-copy{display:flex; flex-direction:column; gap:5px; min-width:0;}
+  .rank-hero-title{
+    font-family:'IM Fell English',serif; font-size:26px; font-weight:400; line-height:1.15;
+    color:var(--tier-color, var(--cream2));
+  }
+  /* Echoes the "Token live" badge elsewhere on this page (same dot, same
+     pulse) -- reads as the same "this is live, not a snapshot" signal. */
+  .rank-hero-live{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .rank-hero-live-dot{
+    width:6px; height:6px; border-radius:50%; flex:none;
+    background:var(--tier-color, var(--green-bright));
+    box-shadow:0 0 6px var(--tier-color, rgba(111,207,58,0.85));
+    animation:rank-live-pulse 1.6s ease-in-out infinite;
+  }
+
+  /* minmax(0, 1fr), not a bare 1fr -- a bare 1fr track still respects its
+     content's min-content width, so the Wallet tile's nowrap address (once
+     forced onto one line, below) was quietly stealing width from Balance's
+     column on a narrow phone instead of the two staying equal. */
+  .rank-stats{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;}
+  /* Below this, the modal card itself is narrower than its 420px max (it's
+     min(100vw - 40px, 420px)), and a half-width column can no longer fit
+     the address next to its copy button at a readable size -- every common
+     phone width is under this. One column each gets the card's full
+     interior width instead, which comfortably fits both. */
+  @media (max-width:480px){
+    .rank-stats{grid-template-columns:1fr;}
+  }
+  .rank-stat{background:rgba(255,255,255,0.03); border:1px solid rgba(111,207,58,0.1); border-radius:12px; padding:12px; text-align:left; min-width:0;}
+  .rank-stat-label{font-size:13px; color:var(--ink-dim); margin-bottom:5px;}
+  .rank-stat-value{color:var(--cream2); font-size:17px; font-weight:500; word-break:break-word;}
+  /* Sits right after the balance digits in place of a "$HOODFACE" label --
+     nudged down to sit on the digits' baseline rather than their top. */
+  .rank-stat-coin{width:18px; height:18px; object-fit:contain; vertical-align:-3px; margin-left:2px;}
+  /* Digits in the site's serif face read as slightly stylized -- switched to
+     the monospace already used for every other number on the site (the
+     wallet address right beside it, the game's own score/HUD) rather than
+     the body's decorative one. Scoped to the id, not .rank-stat-value
+     itself, so the tokenomics grid elsewhere on the page (which reuses
+     .rank-stat-value too) is untouched. */
+  #holderBalance{font-family:'IBM Plex Mono',monospace;}
+  /* The wallet tile: address + its own copy button share the row, so the
+     address gets a smaller monospace treatment rather than the balance
+     tile's larger serif number -- two classes beat .rank-stat-value's one,
+     so this wins regardless of source order. */
+  .rank-stat-value-row{display:flex; align-items:center; gap:8px;}
+  /* One line, truncated with an ellipsis rather than wrapped -- shortAddr()
+     already shortens the address, but at 320px there isn't room for even
+     that short form plus the copy button next to it. min-width:0 overrides
+     a flex item's own default "automatic minimum size" (which otherwise
+     ignores overflow/text-overflow and wraps instead), and flex:1 lets it
+     take whatever the copy button (flex:0 0 auto below) doesn't need. */
+  .rank-stat-value-row .rank-stat-value{
+    flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis;
+    font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:400; white-space:nowrap;
+  }
+  .rank-copy-btn{
+    flex:0 0 auto; width:26px; height:26px; padding:0; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(111,207,58,0.08); border:1px solid rgba(111,207,58,0.22); color:var(--green-bright);
+    cursor:pointer; transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .rank-copy-icon{font-size:12px; line-height:1;}
+  .rank-copy-btn.is-copied{background:rgba(111,207,58,0.24); border-color:var(--green-bright); color:#8ade56;}
+
+  .rank-explorer-link{
+    display:inline-flex; align-items:center; gap:5px; margin-top:14px;
+    font-family:'IM Fell English',serif; font-size:13px; color:var(--green-bright);
+    text-decoration:none; border-bottom:1px solid rgba(111,207,58,0.35); padding-bottom:1px;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  /* Sits under the wallet address, inside the same compact stat tile --
+     quiet on purpose, so it reads as a fallback tucked under the address
+     rather than competing with it. */
+  .rank-switch-link{
+    display:block; margin-top:8px; padding:0; border:none; background:none; cursor:pointer;
+    font-family:'IM Fell English',serif; font-size:12px; color:var(--ink-dim);
+    text-decoration:underline; text-decoration-color:rgba(238,244,234,0.25); text-underline-offset:2px;
+    transition:color .15s ease, text-decoration-color .15s ease;
+  }
+  /* One line of the same tier philosophy already printed on the ladder page
+     -- wallet-connect.js picks it via tierBlurb() so the two never say
+     something different about the same tier. The left rule takes --tier-
+     color, same as the icon ring and title above, so it reads as one more
+     part of that tier's own color rather than a generic quote treatment. */
+  .rank-tier-blurb{
+    margin:14px 0 0; padding-left:12px;
+    border-left:2px solid var(--tier-color, var(--green-bright));
+    font-family:'IM Fell English',serif; font-style:italic; font-size:14px; line-height:1.45;
+    color:var(--cream2);
+  }
+
+  .holder-error{color:#e08a8a; font-size:13px; margin-top:14px; display:none;}
+  .holder-error.show{display:block;}
+
+  /* ---------- wallet connect modal ---------- */
+  .wallet-modal{
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .wallet-modal[hidden]{display:none;}
+  .wallet-modal-backdrop{position:absolute; inset:0; background:rgba(2,6,3,0.78); backdrop-filter:blur(8px);}
+  .wallet-modal-card{
+    position:relative; z-index:1; width:100%; max-width:420px; max-height:88vh; overflow-y:auto;
+    padding:30px; border-radius:22px;
+    background:radial-gradient(120% 90% at 50% 0%, rgba(111,207,58,0.13), #071009);
+    border:1px solid rgba(111,207,58,0.22);
+    box-shadow:0 40px 100px rgba(0,0,0,0.7);
+    animation:wm-rise .25s ease both;
+  }
+  @keyframes wm-rise{ from{opacity:0; transform:translateY(10px) scale(0.98);} to{opacity:1; transform:none;} }
+  .wallet-modal-close{
+    position:absolute; top:20px; right:20px; width:32px; height:32px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; border:1px solid rgba(111,207,58,0.25); color:var(--ink-dim);
+    font-size:15px; line-height:1; cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .wallet-modal-title{font-family:'IM Fell English',serif; font-weight:400; font-size:26px; color:var(--cream2); margin:10px 0 8px;}
+  .wallet-modal-sub{color:var(--ink-dim); font-size:15px; line-height:1.5; margin:0 0 22px;}
+
+  .wallet-option-list{display:flex; flex-direction:column; gap:10px;}
+  .wallet-option{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; width:100%;
+    padding:13px 14px; border-radius:14px; text-align:left; cursor:pointer;
+    background:rgba(255,255,255,0.02); border:1px solid rgba(111,207,58,0.16); color:var(--ink);
+    font-family:'IM Fell English',serif;
+    transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  /* The glyph used to float bare in the row; giving it its own tinted,
+     bordered square reads as a proper wallet icon rather than a stray
+     emoji, and gives the row a second thing (icon vs. status pill) to
+     recolor when a wallet isn't available. */
+  .wallet-option-icon{
+    flex:0 0 auto; width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; line-height:1;
+    background:rgba(111,207,58,0.08); border:1px solid rgba(111,207,58,0.18);
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .wallet-option-icon img{width:24px; height:24px; object-fit:contain;}
+  /* A 120px floor, not 0 -- with flex-wrap on the row above, this is what
+     makes the status pill drop to its own line under a narrow phone's
+     width instead of both being squeezed onto one line together. Without a
+     floor here the body was free to shrink all the way to 0 while the pill
+     (flex-shrink:0) held its full width, and the name/hint text -- unbound
+     by its collapsed parent -- rendered on top of the pill instead of
+     wrapping under it. */
+  .wallet-option-body{flex:1 1 120px; min-width:120px; display:flex; flex-direction:column; gap:2px;}
+  .wallet-option-name{font-size:17px; color:var(--cream2);}
+  .wallet-option-hint{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.02em; color:var(--ink-dim);}
+  .wallet-option-meta{
+    flex:0 0 auto; margin-left:auto; white-space:nowrap;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:3px 9px; border-radius:999px;
+    color:var(--green-bright); background:rgba(111,207,58,0.1); border:1px solid rgba(111,207,58,0.28);
+  }
+  .wallet-option:disabled{cursor:not-allowed; opacity:0.55;}
+  .wallet-option.is-unavailable .wallet-option-icon{background:rgba(238,244,234,0.04); border-color:rgba(238,244,234,0.1);}
+  .wallet-option.is-unavailable .wallet-option-meta,
+  .wallet-option.is-locked .wallet-option-meta{
+    color:rgba(238,244,234,0.4); background:rgba(238,244,234,0.04); border-color:rgba(238,244,234,0.12);
+  }
+
+  .wallet-modal-spinner{
+    position:relative; width:70px; height:70px; margin:0 auto 22px; border-radius:50%;
+    border:2px solid rgba(111,207,58,0.18); border-top-color:var(--green-bright);
+    display:flex; align-items:center; justify-content:center;
+    animation:wm-spin 1s linear infinite;
+  }
+  /* Counter-spins against the ring's own rotation so the wallet's glyph
+     sits still at the center instead of visibly spinning with it. */
+  .wallet-modal-spinner-glyph{font-size:24px; line-height:1; animation:wm-spin-reverse 1s linear infinite;}
+  @keyframes wm-spin{ to{transform:rotate(360deg);} }
+  @keyframes wm-spin-reverse{ to{transform:rotate(-360deg);} }
+  #modalStepLoading{text-align:center;}
+  #modalStepLoading .wallet-modal-title{margin-top:0;}
+
+  .hood-stats-grid{
+    /* 140px (not 160px) so this still fits a clean 2x2 at ~360px phone
+       widths -- at 160px the pair falls just short there and collapses
+       to a single stacked column, making the grid noticeably taller
+       than on slightly wider phones for no real reason. */
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px;
+    margin-top:34px;
+  }
+  /* Scoped to this grid (not .rank-stat-label/.rank-stat-value directly)
+     so this doesn't also apply to the Balance/Symbol tiles in the
+     connected-wallet result panel, which share the same base classes.
+     Both label and value match .section-desc's 19px (the lede under
+     "Every face earns its rank") for consistency with the rest of the
+     hero. */
+  .hood-stats-grid .rank-stat-label{font-size:17px;}
+  .hood-stats-grid .rank-stat-value{font-size:19px;}
+  .hood-stat-note{display:block; margin-top:8px; font-family:'IM Fell English',serif; font-size:13px; color:var(--green-bright);}
+
+  /* ---------- Hood Status app (ladder / dashboard / faq) ---------- */
+  .hood-ladder{max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:12px;}
+  .hood-ladder-item{
+    display:flex; flex-wrap:wrap; align-items:center; gap:16px;
+    padding:20px 22px; border-radius:14px;
+    border:1px solid rgba(111,207,58,0.13);
+    /* --tier-color is set per-row inline, from the same token each tier
+       already uses elsewhere on the site (gold for top rank, down to
+       ink-dim for "not in the hood yet") -- keeps the ladder's hierarchy
+       readable without inventing a new palette just for this list. */
+    border-left:3px solid var(--tier-color, var(--green-bright));
+    background:linear-gradient(90deg, rgba(111,207,58,0.05), rgba(255,255,255,0.012));
+    transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  }
+  .hood-ladder-num{font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.12em; color:var(--ink-dim); width:24px; flex:0 0 auto;}
+  .hood-ladder-glyph{font-size:28px; line-height:1; flex:0 0 auto;}
+  .hood-ladder-body{flex:1 1 200px; min-width:180px;}
+  .hood-ladder-name{font-family:'IM Fell English',serif; font-size:22px; color:var(--tier-color, var(--cream2));}
+  .hood-ladder-blurb{margin-top:4px; font-size:14px; color:var(--ink-dim); line-height:1.4;}
+  .hood-ladder-threshold{text-align:right; flex:0 0 auto; margin-left:auto;}
+  .hood-ladder-threshold-label{font-family:'IM Fell English',serif; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-dim);}
+  .hood-ladder-threshold-value{margin-top:5px; font-family:'IM Fell English',serif; font-size:17px; font-weight:600; color:var(--cream2);}
+
+  .hood-next-tier{margin-top:18px; padding-top:16px; border-top:1px dashed var(--line);}
+  .next-tier-top{
+    display:flex; justify-content:space-between;
+    font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-dim);
+    margin-bottom:8px;
+  }
+  .next-tier-top span:last-child{color:var(--cream2); text-transform:none; font-size:14px;}
+  .next-tier-track{height:8px; border-radius:5px; background:rgba(255,255,255,0.08); overflow:hidden;}
+  .next-tier-fill{
+    height:100%; border-radius:5px; width:0%;
+    background:linear-gradient(90deg,#5fb63c,#c6ff8f);
+    box-shadow:0 0 12px rgba(111,207,58,0.5);
+    transition:width .5s ease;
+  }
+  .next-tier-remaining{margin-top:8px; font-family:'IM Fell English',serif; font-size:13px; color:var(--ink-dim);}
+  /* No border-top/margin-top of its own -- it's a sibling of #nextTierProgress
+     inside the same .hood-next-tier wrapper, which already draws the one
+     dashed divider above this whole section. Adding a second here (the
+     original bug) drew two stacked dashed lines with a doubled gap between
+     them once #nextTierProgress hid rather than one clean divider. */
+  .next-tier-maxed{font-family:'IM Fell English',serif; font-size:14px; color:var(--gold); text-align:center;}
+
+  .hood-faq-list{max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:10px;}
+  .hood-faq-item{
+    border:1px solid rgba(111,207,58,0.13); border-radius:14px; overflow:hidden;
+    background:rgba(255,255,255,0.015);
+    transition:border-color .2s ease;
+  }
+  .hood-faq-q{
+    display:flex; width:100%; align-items:center; justify-content:space-between; gap:16px;
+    padding:18px 20px; background:transparent; border:none; color:var(--cream2); text-align:left; cursor:pointer;
+    font-family:'IM Fell English',serif; font-size:18px;
+  }
+  .hood-faq-sign{flex:0 0 auto; font-size:20px; line-height:1; color:var(--green-bright); transition:transform .2s ease;}
+  .hood-faq-item.open .hood-faq-sign{transform:rotate(45deg);}
+  /* max-height transition rather than height/display -- lets the collapse
+     animate without knowing the content's real height up front. 300px is
+     comfortable headroom for a couple of wrapped lines at this font size. */
+  .hood-faq-a{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+  .hood-faq-item.open .hood-faq-a{max-height:300px;}
+  .hood-faq-a p{margin:0; padding:0 20px 20px; color:var(--ink-dim); font-size:15px; line-height:1.55;}
+
+  /* ---------- community ---------- */
+  .community-grid{
+    display:grid; grid-template-columns:1fr; gap:14px; max-width:520px; margin:0 auto;
+  }
+  @media(min-width:560px){ .community-grid{grid-template-columns:1fr 1fr 1fr;} }
+  .comm-card{
+    border:0.5px solid var(--line); border-radius:22px; padding:26px 18px; text-align:center;
+    background:rgba(255,255,255,0.025); text-decoration:none; color:var(--ink);
+    transition:transform .15s ease, border-color .15s ease, box-shadow .2s ease;
+  }
+  .comm-icon{font-size:26px; margin-bottom:10px; display:block;}
+  .comm-name{font-family:'IM Fell English',serif; font-weight:400; font-size:18px; margin-bottom:3px;}
+  .comm-sub{font-family:'IM Fell English',serif; font-size:11px; color:var(--ink-dim);}
+
+  /* ---------- quick links ---------- */
+  .quicklink-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:560px; margin:0 auto;
+    align-items:stretch;
+  }
+  @media(min-width:640px){ .quicklink-grid{grid-template-columns:repeat(4,1fr); max-width:920px;} }
+  .quicklink-card{
+    position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
+    height:100%;
+    border:1px solid rgba(232,212,77,0.45); border-radius:22px; padding:30px 16px;
+    background:rgba(111,207,58,0.04); text-decoration:none; color:var(--ink);
+    box-shadow:inset 0 0 0 3px rgba(12,23,16,0.9), inset 0 0 0 4px rgba(111,207,58,0.3),
+      0 0 26px -6px rgba(111,207,58,0.45);
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, box-shadow .2s ease;
+  }
+  .quicklink-card.is-disabled{
+    cursor:not-allowed; opacity:0.85;
+  }
+  .ql-icon{width:72px; height:72px; object-fit:contain; margin-bottom:14px;}
+  .ql-name{font-family:'IM Fell English',serif; font-weight:400; font-size:21px; margin-bottom:8px; color:var(--cream2);}
+  .ql-desc{font-family:'IM Fell English',serif; font-size:14px; color:var(--ink-dim); line-height:1.4;}
+  .ql-desc .accent{color:var(--green-bright);}
+  .ql-divider{
+    display:flex; align-items:center; gap:8px; width:100%; margin-top:auto; padding-top:18px;
+  }
+  .ql-divider-line{flex:1; height:1px; background:rgba(111,207,58,0.3);}
+  .ql-divider-icon{width:16px; height:16px; object-fit:contain;}
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top:1px solid var(--line); padding:34px 20px 40px; text-align:center;
+  }
+  /* Community used to end, then a hairline + fresh padding started the
+     footer below it -- two visually separate blocks. Tightened into one
+     closing block: #community's own bottom padding shrinks and the
+     footer's top border/padding drop, so the link tiles and the
+     disclaimer/brand line underneath read as a single unit. */
+  #community{padding-bottom:20px;}
+  #community + footer{border-top:none; padding-top:4px;}
+  .disclaimer{
+    max-width:560px; margin:0 auto 18px; font-size:15px; line-height:1.6; color:var(--ink-dim);
+    font-family:'IM Fell English',serif;
+  }
+  .foot-brand{font-family:'IM Fell English',serif; font-weight:400; font-size:18px; color:var(--ink-dim);}
+
+  .medallion-wrap.main-logo-wrap{
+    position:relative;
+    width:270px;
+    height:270px;
+    margin:0 auto 26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:transparent;
+    border:0;
+    box-shadow:none;
+  }
+  .main-logo{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    filter:drop-shadow(0 10px 18px rgba(0,0,0,.28));
+  }
+
+  /* ---------- Hood Runner mini-game (index.html, between Lore and Faces) ---------- */
+  /* touch-action here (not just on the canvas) is what actually makes "tap
+     anywhere in the section" fast on mobile -- without it, a tap on the
+     title/description text above the canvas still gets the browser's
+     ~300ms double-tap-zoom delay before the jump registers. user-select
+     and tap-highlight/callout are all just cleanup so repeatedly tapping
+     the title text to jump doesn't select it, flash a highlight box, or
+     (iOS Safari) pop the copy/share callout. */
+  #game{
+    cursor:pointer; touch-action:manipulation;
+    -webkit-user-select:none; user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;
+    /* #game used to be its own <section>, picking up section{padding:96px
+       20px} -- that padding was the actual wide tap zone the comment
+       above the pointerdown handler (js/dino-game.js) describes: extra
+       dead space around the canvas so the frame itself isn't a fiddly
+       target mid-run. Folding #game into a tab panel dropped that padding
+       (#play's shared section-head/tabs now own the section-level
+       padding instead), which silently shrank the tap zone down to
+       exactly .hood-game-wrap's own box -- confirmed with
+       getBoundingClientRect(): the two matched pixel-for-pixel with no
+       padding restored. This puts real vertical margin back specifically
+       around the game frame; #faces doesn't need the same treatment, its
+       gallery/spin content already carries its own spacing. */
+    padding:40px 0;
+  }
+  .hood-game-wrap{
+    position:relative; max-width:800px; margin:0 auto;
+    border-radius:16px; overflow:hidden;
+    border:1px solid rgba(0,0,0,0.4);
+    /* Recessed/sunken look -- the screen sits below the page surface
+       instead of floating above it. Inset shadows carve the well (heavier
+       at the top lip, lighter at the bottom); the thin outer highlight
+       right at the rim catches a touch of light where the flat page meets
+       the drop into the recess. */
+    box-shadow:
+      inset 0 12px 24px -6px rgba(0,0,0,0.8),
+      inset 0 -6px 14px -8px rgba(0,0,0,0.5),
+      inset 0 0 0 1px rgba(0,0,0,0.35),
+      0 1px 0 rgba(241,234,220,0.25);
+  }
+  #hoodGameCanvas{
+    display:block; width:100%; height:auto; background:#0c0f0a;
+    touch-action:manipulation; cursor:pointer;
+  }
+  .hood-game-hud{
+    position:absolute; top:12px; left:0; right:0;
+    display:flex; padding:0 16px;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px;
+    color:#c8f0b8; text-shadow:0 1px 3px rgba(0,0,0,0.7);
+    pointer-events:none;
+  }
+  .hood-game-best{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:1;
+    font-family:'IM Fell English',serif; font-size:22px; letter-spacing:0.02em;
+    color:#e0b23a; text-shadow:0 1px 3px rgba(0,0,0,0.7);
+    pointer-events:none;
+  }
+  .hood-game-version-badge{
+    position:absolute; left:10px; bottom:10px; z-index:1;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.03em;
+    color:rgba(200,240,184,0.55); text-shadow:0 1px 3px rgba(0,0,0,0.7);
+    pointer-events:none;
+  }
+  .hood-game-settings-btn{
+    position:absolute; top:8px; right:8px; z-index:3;
+    padding:5px 12px; border-radius:0;
+    background:transparent; border:none;
+    color:#c8f0b8; text-shadow:0 1px 3px rgba(0,0,0,0.7);
+    font-family:'IM Fell English',serif; font-size:14px; letter-spacing:0.03em;
+    line-height:1; cursor:pointer; touch-action:manipulation;
+    /* Faded at rest on purpose -- it's a secondary control that shouldn't
+       compete with the game itself; hovering (or focusing/opening it)
+       brings it to full clarity. */
+    opacity:0.55;
+    transition:opacity 0.15s ease, transform 0.15s ease;
+  }
+  .hood-game-settings-btn:hover,
+  .hood-game-settings-btn:focus-visible,
+  .hood-game-settings-btn[aria-expanded="true"]{opacity:1;}
+  .hood-game-settings-btn:active{transform:scale(0.92);}
+  .hood-game-settings-panel{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:4;
+    /* Responsive to the wrap's own rendered width (its containing block)
+       instead of a fixed px number -- on a narrow phone where the wrap
+       itself is only ~250-300px wide, a flat 200px+padding panel ate
+       almost the whole width edge-to-edge; scaling down past that point
+       keeps a comfortable margin on every screen size instead. Capped at
+       220px so it doesn't balloon on a wide desktop wrap. max-height +
+       scroll is a safety net for short/landscape phones where the wrap
+       itself can end up shorter than the panel's content. */
+    width:min(85%, 220px);
+    max-height:calc(100% - 20px); overflow-y:auto;
+    padding:16px 18px;
+    border-radius:12px;
+    background:rgba(8,14,8,0.82);
+    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    /* Same soft single-hairline border used by the other in-page popups
+       (e.g. .wallet-modal-card) instead of a heavier double-line frame,
+       just tinted with the game's gold accent. */
+    border:1px solid rgba(224,178,58,0.3);
+    box-shadow:0 16px 40px -12px rgba(0,0,0,0.7);
+    font-family:'IM Fell English',serif;
+  }
+  .hood-game-settings-title{
+    margin:0 0 12px; padding-bottom:8px;
+    text-align:center; font-size:19px; letter-spacing:0.08em; text-transform:uppercase;
+    color:#e0b23a; border-bottom:1px solid rgba(224,178,58,0.35);
+  }
+  .hood-game-settings-row{
+    display:flex; flex-direction:column; gap:4px;
+    font-size:12px; color:#c8f0b8; letter-spacing:0.02em;
+  }
+  .hood-game-settings-row + .hood-game-settings-row{margin-top:10px;}
+  /* The Sound row is a master on/off switch, not a slider -- laid out as
+     a horizontal label+switch row instead of the stacked label-over-slider
+     layout the Music/SFX rows use. */
+  .hood-game-settings-row-toggle{
+    flex-direction:row; align-items:center; justify-content:space-between;
+  }
+  /* Four custom properties are the single source of truth for every other
+     toggle measurement below (thumb size/position, the checked-state slide
+     distance) -- mobile and fullscreen only ever need to redeclare these
+     four on .hood-game-toggle itself (children inherit them), instead of
+     separately-scaled copies of the track/thumb/checked-position rules
+     that had to be kept in sync by hand. That's what let the thumb drift
+     out of alignment at fullscreen scale before: the checked-state
+     translateX was an independently-chosen pixel value with no formal
+     relationship to the track width it needed to stay flush against. */
+  .hood-game-toggle{
+    /* Same shape as the fullscreen-scaled toggle, evaluated at the 800px
+       design width every other fullscreen-scaled element in this file
+       already treats as its "1x" reference (0.036/0.019/0.01625/0.0025 *
+       800, rounded) -- the base toggle used to have its own independently-
+       chosen width/height instead of just being the fullscreen pill at a
+       smaller scale. */
+    --hgt-w:29px; --hgt-h:15px; --hgt-thumb:13px; --hgt-inset:2px;
+    position:relative; display:inline-block; width:var(--hgt-w); height:var(--hgt-h); flex:0 0 auto;
+  }
+  .hood-game-toggle input{
+    position:absolute; inset:0; margin:0; opacity:0; cursor:pointer; touch-action:manipulation;
+  }
+  .hood-game-toggle-track{
+    position:absolute; inset:0;
+    /* A very large px radius (rather than a fixed value, or the toggle's
+       own height) always clamps to a perfect capsule regardless of the
+       box's actual size -- border-radius can never exceed half the
+       shorter side. No border on the track -- keeping the thumb's
+       position math working off the plain border-box at any scale is
+       simpler than also accounting for a border eating into it. */
+    border-radius:999px;
+    background:rgba(241,234,220,0.2);
+    transition:background 0.15s ease;
+  }
+  .hood-game-toggle-track::before{
+    content:'';
+    position:absolute;
+    /* Vertically centered via top:50%+translateY(-50%) rather than a
+       hand-picked top offset -- exact at any track height with nothing to
+       keep in sync. */
+    top:50%; left:var(--hgt-inset);
+    width:var(--hgt-thumb); height:var(--hgt-thumb); border-radius:50%;
+    transform:translateY(-50%);
+    background:#c8f0b8;
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .hood-game-toggle input:checked + .hood-game-toggle-track{
+    background:rgba(224,178,58,0.4);
+  }
+  .hood-game-toggle input:checked + .hood-game-toggle-track::before{
+    /* Slides exactly flush with the right inset regardless of scale,
+       since it's computed from the same --hgt-* values the track/thumb
+       themselves use instead of an independent literal pixel value. */
+    transform:translateY(-50%) translateX(calc(var(--hgt-w) - var(--hgt-thumb) - 2 * var(--hgt-inset)));
+    background:#e0b23a;
+  }
+  .hood-game-toggle input:focus-visible + .hood-game-toggle-track{
+    outline:1px solid rgba(224,178,58,0.7); outline-offset:2px;
+  }
+  .hood-game-settings-row input[type="range"]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:3px; border-radius:2px;
+    background:rgba(241,234,220,0.25);
+    outline:none; touch-action:manipulation;
+  }
+  .hood-game-settings-row input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:13px; height:13px; border-radius:50%;
+    background:#e0b23a; cursor:pointer;
+    border:1px solid rgba(8,14,8,0.6);
+  }
+  .hood-game-settings-row input[type="range"]::-moz-range-thumb{
+    width:13px; height:13px; border-radius:50%;
+    background:#e0b23a; cursor:pointer; border:1px solid rgba(8,14,8,0.6);
+  }
+  .hood-game-settings-save{
+    display:block; width:100%; margin-top:14px;
+    padding:8px 0; border-radius:8px; border:none;
+    background:rgba(224,178,58,0.16); color:#e0b23a;
+    font-family:'IM Fell English',serif; font-size:14px; letter-spacing:0.06em; text-transform:uppercase;
+    cursor:pointer; touch-action:manipulation;
+    transition:background 0.15s ease, transform 0.15s ease;
+  }
+  /* Same guard, same reason: #hoodGameRanksBtn ships hidden and is only
+     revealed once the leaderboard API answers, which display:block above
+     would otherwise override. */
+  .hood-game-settings-save[hidden]{ display:none; }
+  .hood-game-settings-save:hover{background:rgba(224,178,58,0.28);}
+  .hood-game-settings-save:active{transform:scale(0.97);}
+  /* Unsaved changes are sitting in the panel. Closing it any other way
+     discards them by design, so the button has to read as "there is
+     something here to lose" rather than looking inert. */
+  .hood-game-settings-save.is-dirty{
+    background:rgba(224,178,58,0.34); border-color:rgba(224,178,58,0.85); color:#f1ead2;
+    box-shadow:0 0 0 1px rgba(224,178,58,0.25), 0 2px 10px -4px rgba(224,178,58,0.6);
+  }
+  .hood-game-settings-save.is-dirty:hover{background:rgba(224,178,58,0.44);}
+  /* Briefly shown disabled/"Saved!" right after a click (see the click
+     handler) -- still fully legible, just reads as settled rather than
+     interactive for that short window. */
+  .hood-game-settings-save:disabled{
+    background:rgba(224,178,58,0.3); color:#f1ead2; cursor:default;
+  }
+  .hood-game-settings-version{
+    margin-top:12px; padding-top:10px;
+    border-top:1px solid rgba(241,234,220,0.14);
+    font-size:10px; color:rgba(200,240,184,0.55); letter-spacing:0.04em;
+  }
+  /* Same ~480px small-phone breakpoint used elsewhere on the page -- the
+     whole popup scales down a uniform 1/5 (0.8x) here, not just its width:
+     every dimension below is its non-mobile value above times 0.8, rounded
+     to a clean pixel. */
+  @media(max-width:479px){
+    .hood-game-settings-panel{width:min(68%, 176px); padding:13px 14px; border-radius:10px;}
+    .hood-game-settings-title{font-size:15px; margin-bottom:10px; padding-bottom:6px;}
+    .hood-game-settings-row{font-size:10px; gap:3px;}
+    .hood-game-settings-row + .hood-game-settings-row{margin-top:8px;}
+    /* Just the 4 source-of-truth custom properties (0.8x of the base
+       values, same as everything else in this breakpoint) -- the track,
+       thumb, and checked-state slide distance all rederive from these
+       automatically. */
+    .hood-game-toggle{--hgt-w:23px; --hgt-h:12px; --hgt-thumb:10px; --hgt-inset:1.5px;}
+    .hood-game-settings-row input[type="range"]::-webkit-slider-thumb{width:10px; height:10px;}
+    .hood-game-settings-row input[type="range"]::-moz-range-thumb{width:10px; height:10px;}
+    .hood-game-settings-save{margin-top:11px; padding:6px 0; border-radius:6px; font-size:11px;}
+    .hood-game-settings-version{margin-top:10px; padding-top:8px; font-size:8px;}
+  }
+  /* ---- leaderboard ---- */
+  /* Reuses .hood-game-settings-panel wholesale, so the board inherits the
+     popup's frame, blur and its fullscreen scaling for free; only the parts
+     the settings popup has no equivalent for are defined here. */
+  /* The panel is a column that never scrolls itself -- only the standings
+     inside it do. That is what keeps the title, tabs and Close pinned. The
+     list is the flexible row (min-height:0 so it is allowed to shrink below
+     its content), capped at five rows on a roomy canvas but free to give
+     ground on a short one -- which is the case that matters, since the
+     popup lives inside a 450px canvas that is barely 200px tall on a phone
+     held upright. Sizing it this way means no per-breakpoint guesses. */
+  .hood-game-ranks-panel{
+    z-index:5;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+  /* display:flex above outranks the browser's own [hidden]{display:none},
+     so the panel has to opt back in explicitly -- without this it stays
+     laid out and keeps swallowing clicks meant for the menu behind it.
+     Same guard .hood-game-overlay already carries for the same reason. */
+  .hood-game-ranks-panel[hidden]{ display:none; }
+  .hood-game-ranks-tabs{
+    display:flex; gap:6px; margin-bottom:10px;
+  }
+  .hood-game-ranks-tab{
+    flex:1; padding:5px 0; border-radius:7px; cursor:pointer;
+    background:transparent; border:1px solid rgba(241,234,220,0.16);
+    color:rgba(200,240,184,0.7);
+    font-family:'IM Fell English',serif; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+    transition:background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .hood-game-ranks-tab.is-active{
+    background:rgba(111,207,58,0.16); border-color:rgba(111,207,58,0.5); color:var(--green-bright);
+  }
+  /* Five rows tall, then it scrolls. The panel as a whole must not be what
+     scrolls: it lives inside the 450px canvas, and on a phone held upright
+     that left ten rows pushing the Close button out of reach. Capping the
+     list instead keeps the title, tabs and Close pinned while the standings
+     move. The height deliberately lands mid-row so a partial sixth line
+     shows, which is what tells you there is more below. */
+  .hood-game-ranks-list{
+    list-style:none; margin:0 0 10px; padding:0;
+    display:flex; flex-direction:column; gap:3px;
+    flex:1 1 auto; min-height:0;
+    max-height:118px; overflow-y:auto; overscroll-behavior:contain;
+    scrollbar-width:thin;
+  }
+  .hood-game-ranks-row{
+    display:grid; grid-template-columns:auto 1fr auto; align-items:baseline; gap:8px;
+    font-family:'IM Fell English',serif; font-size:13px; color:var(--ink);
+    padding:3px 0; border-bottom:1px solid rgba(241,234,220,0.07);
+  }
+  .hood-game-ranks-num{ color:rgba(200,240,184,0.5); min-width:1.9em; letter-spacing:0.12em; }
+  /* Names come from other players, so they are inserted as text and clamped
+     here rather than trusted to be short or well behaved. */
+  .hood-game-ranks-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hood-game-ranks-score{ color:var(--gold); font-weight:600; text-align:right; font-variant-numeric:tabular-nums; }
+  .hood-game-ranks-row.is-you .hood-game-ranks-name{ color:var(--green-bright); }
+  .hood-game-ranks-empty{
+    margin:0 0 10px; font-family:'IM Fell English',serif; font-size:11px;
+    color:rgba(200,240,184,0.55); text-align:center;
+  }
+  /* Top three get the medal treatment the ladder page uses for its tiers. */
+  .hood-game-ranks-row:nth-child(1) .hood-game-ranks-num{ color:var(--gold); }
+  .hood-game-ranks-row:nth-child(2) .hood-game-ranks-num{ color:#cfd6cc; }
+  .hood-game-ranks-row:nth-child(3) .hood-game-ranks-num{ color:var(--bronze); }
+
+  /* ---- name prompt, shown inside the game-over overlay ---- */
+  /* .hood-game-overlay is pointer-events:none so it never eats a tap meant
+     for the canvas; this is the one part of it that must take input back. */
+  .hood-game-save-score{
+    margin-top:14px; pointer-events:auto;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  /* Any display value set on a class outranks the browser's own
+     [hidden]{display:none}, so every element the game toggles through the
+     hidden attribute has to opt back in explicitly. Without this the prompt
+     stayed on screen permanently -- including over the idle "PRESS SPACE TO
+     START" overlay, where there is no run to save and pressing Save could
+     only ever fail. */
+  .hood-game-save-score[hidden]{ display:none; }
+  .hood-game-save-row{ display:flex; gap:6px; }
+  /* The tick sits inside the field, so the row keeps its width whether or
+     not the name has been checked yet -- nothing shifts as you type. */
+  .hood-game-save-field{ position:relative; display:inline-flex; }
+  .hood-game-save-tick{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:13px; line-height:1; color:#6fcf3a;
+    /* visibility, not opacity alone: an opacity:0 tick is still a visible
+       element to assistive tech and to anything asking the DOM. */
+    visibility:hidden; opacity:0; transition:opacity 0.12s ease; pointer-events:none;
+  }
+  .hood-game-save-field.is-free .hood-game-save-tick{ visibility:visible; opacity:1; }
+  .hood-game-save-field.is-free .hood-game-save-input{
+    border-color:rgba(111,207,58,0.75); padding-right:24px;
+  }
+  .hood-game-save-field.is-taken .hood-game-save-input{ border-color:rgba(232,139,106,0.85); }
+  /* One size for every message the overlay shows -- this line, the save
+     confirmation and the game-over text under the score all read as one
+     family rather than three near-misses. Skip stays a notch quieter. */
+  .hood-game-save-state{
+    margin:0; font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.03em;
+    color:#6fcf3a;
+  }
+  .hood-game-save-state[hidden]{ display:none; }
+  .hood-game-save-state.is-error{ color:#e88b6a; }
+  /* The attempt spends the run token, so there is no second try to offer:
+     once it settles, the prompt retires and leaves only its verdict. */
+  .hood-game-save-score.is-done .hood-game-save-row,
+  .hood-game-save-score.is-done .hood-game-save-state,
+  .hood-game-save-score.is-done .hood-game-save-skip{ display:none; }
+  .hood-game-save-input{
+    width:150px; padding:6px 9px; border-radius:7px;
+    background:rgba(8,14,8,0.75); border:1px solid rgba(224,178,58,0.4);
+    color:var(--cream2); font-family:'IM Fell English',serif; font-size:14px;
+  }
+  .hood-game-save-input:focus{ outline:none; border-color:var(--gold); }
+  .hood-game-save-btn{
+    padding:6px 14px; border-radius:7px; cursor:pointer;
+    background:rgba(224,178,58,0.24); border:1px solid rgba(224,178,58,0.6); color:var(--gold);
+    font-family:'IM Fell English',serif; font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
+    transition:background 0.15s ease;
+  }
+  .hood-game-save-btn:disabled{ opacity:0.55; cursor:default; }
+  /* Uppercase like SAVE beside it, but quiet: saving is the point, skipping
+     is the way out. */
+  .hood-game-save-skip{
+    background:none; border:0; cursor:pointer; padding:2px 6px;
+    font-family:'IM Fell English',serif; font-size:11px; letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:rgba(200,240,184,0.55); text-decoration:underline;
+  }
+  .hood-game-save-skip[hidden]{ display:none; }
+  .hood-game-save-msg{
+    margin:0; font-family:'IM Fell English',serif; font-size:12px; color:var(--green-bright);
+  }
+  .hood-game-save-msg.is-error{ color:#e88b6a; }
+  .hood-game-fullscreen-btn{
+    position:absolute; right:10px; bottom:10px; z-index:2;
+    width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.45); border:1px solid rgba(241,234,220,0.22);
+    color:#c8f0b8; font-size:15px; line-height:1; cursor:pointer; touch-action:manipulation;
+    transition:background 0.15s ease, transform 0.15s ease;
+  }
+  .hood-game-fullscreen-btn:hover{background:rgba(0,0,0,0.65);}
+  .hood-game-fullscreen-btn:active{transform:scale(0.92);}
+  .hood-game-fullscreen-btn.is-active{background:rgba(224,178,58,0.35); border-color:rgba(224,178,58,0.5);}
+
+  /* Fullscreen play: the wrap becomes the fullscreen element and fills the
+     screen edge-to-edge; the canvas is letterboxed inside it at its native
+     16:9 (800:450) ratio via the classic "flex-center + max-width/height
+     computed from the opposite viewport dimension" trick, so it fills as
+     much of the screen as possible on any aspect ratio without stretching. */
+  .hood-game-wrap:fullscreen,
+  .hood-game-wrap:-webkit-full-screen,
+  .hood-game-wrap.is-pseudo-fullscreen{
+    width:100vw; height:100vh; max-width:none;
+    display:flex; align-items:center; justify-content:center;
+    background:#000; border-radius:0; border:0; box-shadow:none;
+    /* Rendered width of the letterboxed canvas -- same "tighter of the two
+       axes" expression used for the canvas itself below. The overlay
+       buttons/HUD text scale off of this (as a fraction of their normal
+       800px-design-width pixel sizes) so they grow along with the canvas
+       instead of staying pinned at their small non-fullscreen size. */
+    --hgw-scale-w:min(100vw, 100vh * 800 / 450);
+  }
+  /* iOS Safari's 100vw/100vh report the *largest* possible viewport (as if
+     the address/toolbar were fully collapsed), not the actually-visible
+     one -- sized off plain vh/vw, the wrap and its --hgw-scale-w-derived
+     canvas/HUD came out too big for the real visible area, leaving a black
+     gap on one edge with the fullscreen button pushed out of view behind
+     it. dvh/dvw ("dynamic viewport") track the real visible viewport
+     instead. A browser that doesn't understand the dvh/dvw unit treats the
+     whole declaration as invalid and ignores just that one line, so this
+     is safe as a plain override placed after the vw/vh version above. */
+  .hood-game-wrap:fullscreen,
+  .hood-game-wrap:-webkit-full-screen,
+  .hood-game-wrap.is-pseudo-fullscreen{
+    width:100dvw; height:100dvh;
+    --hgw-scale-w:min(100dvw, 100dvh * 800 / 450);
+  }
+  /* .is-pseudo-fullscreen is the JS fallback for browsers with no real
+     Fullscreen API on arbitrary elements (iOS Safari never implemented
+     one -- see enterFullscreen() in dino-game.js). The real :fullscreen
+     pseudo-classes get this positioning for free from the UA; the CSS
+     class needs it spelled out so the wrap actually covers the viewport
+     instead of just growing to 100vw/100vh inline in the page flow. */
+  .hood-game-wrap.is-pseudo-fullscreen{
+    position:fixed; inset:0; z-index:2000;
+  }
+  /* Locks the background page in place while pseudo-fullscreen is active.
+     A plain overflow:hidden on <html>/<body> was tried first, but Chromium
+     discards the scrolling element's scrollTop as soon as overflow goes to
+     hidden -- exiting fullscreen then always snapped the page back to the
+     very top instead of back to the game section, however far down the
+     user had actually scrolled. Fixing the body in place (with its scroll
+     offset preserved as a negative `top`, set from JS) avoids that: nothing
+     about a position:fixed element's own position depends on the
+     underlying scrollTop, so there's nothing for the browser to discard,
+     and dino-game.js's exitPseudoFullscreen() restores the exact scrollY
+     afterward via window.scrollTo(). */
+  html.hood-game-scroll-locked{ overflow:hidden; }
+  html.hood-game-scroll-locked body{ position:fixed; left:0; right:0; }
+  /* Basis the HUD overlay scales off. Normally just the rendered canvas
+     width, so the HUD keeps the proportions it has at the 800px design
+     width. On a phone the fullscreen canvas is far narrower than 800px, so
+     those same fractions came out SMALLER than the fixed pixel sizes used
+     when not zoomed: entering fullscreen shrank the score, Best, Settings
+     and the version badge to x0.92 even though the playfield itself
+     roughly tripled in area. Doubling the basis below 900px puts them back
+     at about the proportion of the canvas they have in the normal,
+     un-zoomed view, so zooming in now enlarges the HUD along with
+     everything else. Desktop, where the fullscreen canvas is already at or
+     above the design width, is left exactly as it was. */
+  .hood-game-wrap:fullscreen,
+  .hood-game-wrap:-webkit-full-screen,
+  .hood-game-wrap.is-pseudo-fullscreen,
+  .hood-game-wrap.hood-game-force-landscape{
+    --hgw-hud-scale:var(--hgw-scale-w);
+  }
+  @media(max-width:900px){
+    .hood-game-wrap:fullscreen,
+    .hood-game-wrap:-webkit-full-screen,
+    .hood-game-wrap.is-pseudo-fullscreen,
+    .hood-game-wrap.hood-game-force-landscape{
+      --hgw-hud-scale:calc(var(--hgw-scale-w) * 1.44);
+    }
+  }
+  .hood-game-wrap:fullscreen .hood-game-hud,
+  .hood-game-wrap:-webkit-full-screen .hood-game-hud,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-hud{
+    /* Same 800px-design-width fractions as every other overlay here
+       (12/800, 16/800). Only font-size used to scale, so the score kept its
+       flat 12px/16px inset while Best, Settings and the corner buttons all
+       moved proportionally -- on a big screen it ended up hugging the
+       corner, out of step with the rest of the HUD. */
+    font-size:calc(var(--hgw-hud-scale) * 0.0175);
+    top:calc(var(--hgw-hud-scale) * 0.015);
+    padding:0 calc(var(--hgw-hud-scale) * 0.02);
+  }
+  .hood-game-wrap:fullscreen .hood-game-best,
+  .hood-game-wrap:-webkit-full-screen .hood-game-best,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-best{
+    font-size:calc(var(--hgw-hud-scale) * 0.0275);
+    top:calc(var(--hgw-hud-scale) * 0.0125);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-btn,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-btn,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-btn{
+    font-size:calc(var(--hgw-hud-scale) * 0.0175);
+    padding:calc(var(--hgw-hud-scale) * 0.00625) calc(var(--hgw-hud-scale) * 0.015);
+    top:calc(var(--hgw-hud-scale) * 0.01);
+    right:calc(var(--hgw-hud-scale) * 0.01);
+  }
+  .hood-game-wrap:fullscreen .hood-game-fullscreen-btn,
+  .hood-game-wrap:-webkit-full-screen .hood-game-fullscreen-btn,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-fullscreen-btn{
+    width:calc(var(--hgw-hud-scale) * 0.0475);
+    height:calc(var(--hgw-hud-scale) * 0.0475);
+    font-size:calc(var(--hgw-hud-scale) * 0.01875);
+    right:calc(var(--hgw-hud-scale) * 0.0125);
+    bottom:calc(var(--hgw-hud-scale) * 0.0125);
+  }
+  .hood-game-wrap:fullscreen .hood-game-version-badge,
+  .hood-game-wrap:-webkit-full-screen .hood-game-version-badge,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-version-badge{
+    font-size:calc(var(--hgw-hud-scale) * 0.01375);
+    left:calc(var(--hgw-hud-scale) * 0.0125);
+    bottom:calc(var(--hgw-hud-scale) * 0.0125);
+  }
+  /* Settings popup: same 800px-design-width fraction * --hgw-scale-w
+     approach as the HUD/buttons above, just applied to every sub-part of
+     the panel (title, rows, toggle switch, sliders, version line) so the
+     whole modal grows together instead of staying pinned at its small
+     non-fullscreen size while the canvas around it gets much bigger --
+     boosted an extra 25% over --hgw-scale-w (via this dedicated
+     --hgw-menu-scale-w derived from it) so it reads clearly once the
+     canvas itself gets very large in fullscreen, after the popup came out
+     too small scaling it down instead. */
+  .hood-game-wrap:fullscreen,
+  .hood-game-wrap:-webkit-full-screen,
+  .hood-game-wrap.is-pseudo-fullscreen,
+  .hood-game-wrap.hood-game-force-landscape{
+    --hgw-menu-scale-w:calc(var(--hgw-scale-w) * 1.25);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-panel,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-panel,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-panel{
+    width:calc(var(--hgw-menu-scale-w) * 0.25);
+    padding:calc(var(--hgw-menu-scale-w) * 0.02) calc(var(--hgw-menu-scale-w) * 0.0225);
+    border-radius:calc(var(--hgw-menu-scale-w) * 0.015);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-title,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-title,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-title{
+    font-size:calc(var(--hgw-menu-scale-w) * 0.02375);
+    margin-bottom:calc(var(--hgw-menu-scale-w) * 0.015);
+    padding-bottom:calc(var(--hgw-menu-scale-w) * 0.01);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-row,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-row,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-row{
+    font-size:calc(var(--hgw-menu-scale-w) * 0.015);
+    gap:calc(var(--hgw-menu-scale-w) * 0.005);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-row + .hood-game-settings-row,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-row + .hood-game-settings-row,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-row + .hood-game-settings-row{
+    margin-top:calc(var(--hgw-menu-scale-w) * 0.0125);
+  }
+  /* Same 4-custom-property override as the mobile breakpoint above -- the
+     track, thumb, and checked-state slide distance all rederive from
+     these, so there's nothing else to keep in sync at this scale either. */
+  .hood-game-wrap:fullscreen .hood-game-toggle,
+  .hood-game-wrap:-webkit-full-screen .hood-game-toggle,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-toggle{
+    --hgt-w:calc(var(--hgw-menu-scale-w) * 0.036);
+    --hgt-h:calc(var(--hgw-menu-scale-w) * 0.019);
+    --hgt-thumb:calc(var(--hgw-menu-scale-w) * 0.01625);
+    --hgt-inset:calc(var(--hgw-menu-scale-w) * 0.0025);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-row input[type="range"],
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-row input[type="range"],
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-row input[type="range"]{
+    height:calc(var(--hgw-menu-scale-w) * 0.00375);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-row input[type="range"]::-webkit-slider-thumb,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-row input[type="range"]::-webkit-slider-thumb,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-row input[type="range"]::-webkit-slider-thumb{
+    width:calc(var(--hgw-menu-scale-w) * 0.01625);
+    height:calc(var(--hgw-menu-scale-w) * 0.01625);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-row input[type="range"]::-moz-range-thumb,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-row input[type="range"]::-moz-range-thumb,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-row input[type="range"]::-moz-range-thumb{
+    width:calc(var(--hgw-menu-scale-w) * 0.01625);
+    height:calc(var(--hgw-menu-scale-w) * 0.01625);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-save,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-save,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-save{
+    margin-top:calc(var(--hgw-menu-scale-w) * 0.0175);
+    padding:calc(var(--hgw-menu-scale-w) * 0.01) 0;
+    border-radius:calc(var(--hgw-menu-scale-w) * 0.01);
+    font-size:calc(var(--hgw-menu-scale-w) * 0.0175);
+  }
+  .hood-game-wrap:fullscreen .hood-game-ranks-tab,
+  .hood-game-wrap:-webkit-full-screen .hood-game-ranks-tab,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-ranks-tab{
+    font-size:calc(var(--hgw-menu-scale-w) * 0.01375);
+    padding:calc(var(--hgw-menu-scale-w) * 0.00625) 0;
+  }
+  .hood-game-wrap:fullscreen .hood-game-ranks-row,
+  .hood-game-wrap:-webkit-full-screen .hood-game-ranks-row,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-ranks-row{
+    font-size:calc(var(--hgw-menu-scale-w) * 0.01375);
+  }
+  .hood-game-wrap:fullscreen .hood-game-ranks-list,
+  .hood-game-wrap:-webkit-full-screen .hood-game-ranks-list,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-ranks-list{
+    max-height:calc(var(--hgw-menu-scale-w) * 0.1475);
+  }
+  .hood-game-wrap:fullscreen .hood-game-settings-version,
+  .hood-game-wrap:-webkit-full-screen .hood-game-settings-version,
+  .hood-game-wrap.is-pseudo-fullscreen .hood-game-settings-version{
+    margin-top:calc(var(--hgw-menu-scale-w) * 0.015);
+    padding-top:calc(var(--hgw-menu-scale-w) * 0.0125);
+    font-size:calc(var(--hgw-menu-scale-w) * 0.0125);
+  }
+  .hood-game-wrap:fullscreen #hoodGameCanvas,
+  .hood-game-wrap:-webkit-full-screen #hoodGameCanvas,
+  .hood-game-wrap.is-pseudo-fullscreen #hoodGameCanvas{
+    width:100%; height:100%;
+    max-width:calc(100vh * 800 / 450);
+    max-height:calc(100vw * 450 / 800);
+    aspect-ratio:800/450;
+  }
+  /* Same dvh/dvw override as the wrap itself above, for the same iOS
+     Safari "100vh is the largest possible viewport, not the real one"
+     reason -- keeps the canvas's own letterbox math matching the wrap's
+     actual visible size instead of a slightly-too-big phantom one. */
+  .hood-game-wrap:fullscreen #hoodGameCanvas,
+  .hood-game-wrap:-webkit-full-screen #hoodGameCanvas,
+  .hood-game-wrap.is-pseudo-fullscreen #hoodGameCanvas{
+    max-width:calc(100dvh * 800 / 450);
+    max-height:calc(100dvw * 450 / 800);
+  }
+  /* Real screen.orientation.lock('landscape') only works on Android
+     Chrome-family browsers, and only while genuinely fullscreen -- iOS
+     Safari has never implemented orientation lock at all (same gap as the
+     Fullscreen API itself), so without this an iPhone would stay
+     letterboxed in portrait fullscreen instead of actually going
+     landscape. This is a software fallback: rotate the wrap 90deg with a
+     matching translate so it visually fills the screen in landscape
+     regardless of the device's real physical orientation. dino-game.js
+     only adds this class when fullscreen is active, the device is still
+     genuinely in portrait (real orientation-lock didn't take), and it's a
+     touch device -- never on desktop, where a portrait-shaped window is
+     just how the user sized it. --hgw-scale-w and the canvas max-width/
+     max-height get vw/vh-swapped overrides here since the rotated box's
+     own width is 100vh and height is 100vw -- every other overlay element
+     (HUD, buttons, settings popup) already scales purely off the
+     --hgw-scale-w variable, so redefining just that one custom property is
+     enough to make all of them rotation-aware with no extra rules. Placed
+     after the base fullscreen rules above so the cascade lets it win on
+     the few properties it overrides. */
+  .hood-game-wrap.hood-game-force-landscape{
+    position:fixed; top:0; left:0;
+    width:100vh; height:100vw;
+    transform-origin:top left;
+    transform:rotate(90deg) translateY(-100%);
+    --hgw-scale-w:min(100vh, 100vw * 800 / 450);
+  }
+  .hood-game-wrap.hood-game-force-landscape #hoodGameCanvas{
+    max-width:calc(100vw * 800 / 450);
+    max-height:calc(100vh * 450 / 800);
+  }
+  /* Same dvh/dvw override as the non-rotated fullscreen rules above, same
+     iOS Safari reason -- translateY(-100%) still lands correctly since a
+     percentage transform is resolved against the box's final computed
+     height, whichever unit set it. */
+  .hood-game-wrap.hood-game-force-landscape{
+    width:100dvh; height:100dvw;
+    --hgw-scale-w:min(100dvh, 100dvw * 800 / 450);
+  }
+  .hood-game-wrap.hood-game-force-landscape #hoodGameCanvas{
+    max-width:calc(100dvw * 800 / 450);
+    max-height:calc(100dvh * 450 / 800);
+  }
+  .hood-game-overlay{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:20px;
+    background:rgba(8,12,7,0.88);
+    pointer-events:none;
+    opacity:0; transition:opacity 0.1s ease;
+  }
+  .hood-game-overlay.is-visible{opacity:1;}
+  .hood-game-overlay[hidden]{display:none;}
+  .hood-game-overlay-inner{
+    max-width:26ch;
+    /* A column, so the name prompt can be lifted above the game-over text
+       on a small screen -- see the is-naming rules below. */
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .hood-game-overlay-title{
+    font-family:'IM Fell English',serif; font-size:34px; letter-spacing:0.06em;
+    color:#d7ffca; -webkit-text-stroke:0.6px #d7ffca; margin:0 0 10px;
+  }
+  .hood-game-overlay-title-sm{font-size:27.2px;} /* "RUGGED!" only, 20% smaller */
+  .hood-game-overlay-lines p{
+    font-family:'IM Fell English',serif; font-size:19px; color:#d7ffca; margin:0;
+  }
+  .hood-game-overlay-lines p + p{
+    margin-top:6px; font-size:15px; color:#d7ffca; opacity:0.7;
+  }
+  .hood-game-overlay-lines p.hood-game-overlay-score{
+    font-family:'IBM Plex Mono',monospace; font-size:42px; font-weight:700;
+    letter-spacing:0.02em; color:#e0b23a; margin:4px 0; opacity:1;
+  }
+
+  /* ---------- the game-over overlay on a phone ----------
+     The play area is bound to the canvas's 16:9, so at 390px wide it is only
+     ~198px tall. At desktop type sizes the title alone took 76px of that and
+     the name prompt ran off the bottom of the game with its Skip link
+     unreachable. Everything here is the same layout, sized to fit. */
+  @media (max-width: 700px){
+    /* The HUD is flat pixels and never scaled with the frame, so on a 350px
+       canvas "Best" alone was 6.3% of the width against 2.75% on desktop --
+       more than twice as loud, crowding the overlay it sits behind. These
+       bring the whole frame back to roughly its desktop proportions, with a
+       floor at what stays readable on a phone rather than pure arithmetic
+       (14px of score would scale to 6px). Fullscreen is untouched: its rules
+       carry a class each and outrank these. */
+    .hood-game-hud{ font-size:10px; top:8px; padding:0 10px; }
+    .hood-game-best{ font-size:13px; top:7px; }
+    .hood-game-settings-btn{ font-size:11px; top:5px; right:5px; padding:4px 8px; }
+    .hood-game-version-badge{ font-size:9px; left:7px; bottom:7px; }
+    .hood-game-fullscreen-btn{ width:28px; height:28px; font-size:12px; right:7px; bottom:7px; }
+
+    .hood-game-overlay{ padding:10px; }
+    .hood-game-overlay-inner{ max-width:32ch; }
+    .hood-game-overlay-title{ font-size:16px; margin:0 0 3px; }
+    .hood-game-overlay-title-sm{ font-size:13px; }
+    .hood-game-overlay-lines p{ font-size:11px; }
+    .hood-game-overlay-lines p + p{ font-size:11px; margin-top:3px; }
+    .hood-game-overlay-lines p.hood-game-overlay-score{ font-size:19px; margin:1px 0; }
+    .hood-game-save-score{ margin-top:8px; gap:4px; }
+      .hood-game-save-input{ width:118px; padding:4px 8px; font-size:12px; }
+    .hood-game-save-btn{ padding:4px 10px; font-size:11px; }
+    .hood-game-save-tick{ right:6px; font-size:11px; }
+    .hood-game-save-field.is-free .hood-game-save-input{ padding-right:20px; }
+    .hood-game-save-state{ font-size:11px; }
+    .hood-game-save-msg{ font-size:11px; }
+    .hood-game-save-skip{ font-size:10px; padding:0 4px; }
+
+    /* Naming comes first, and on a screen this size it comes alone: the
+       title and the game-over text stand down so the field and both buttons
+       are the whole of the overlay rather than the part that got cut off.
+       Nothing is lost -- the run's score and best are already in the HUD, and
+       both lines come back with the invitation to play once the name is in. */
+    .hood-game-overlay.is-naming .hood-game-overlay-title,
+    .hood-game-overlay.is-naming .hood-game-overlay-lines{ display:none; }
+    .hood-game-overlay.is-naming .hood-game-save-score{ margin-top:0; }
+  }
+
+  /* ---------- press feedback for touch (no :hover, so give taps their own cue) ---------- */
+  .lore-card:active, .face-card:active, .comm-card:active, .quicklink-card:active,
+  .hood-ladder-item:active, .hood-faq-q:active{
+    transform:scale(0.98);
+  }
+  .copy-btn:active{transform:scale(0.9);}
+  .contract-address:active{opacity:0.7;}
+
+  /* ---------- hover-only effects ----------
+     Guarded behind (hover:hover) and (pointer:fine) so touch devices never
+     get stuck in a "hovered" glow after a tap — touch has no real hover,
+     it just simulates one on first tap and doesn't clear it until the user
+     taps something else. Mouse/trackpad users get the same effects as before. */
+  @media (hover: hover) and (pointer: fine){
+    .nav-links a:hover{color:var(--gold);}
+    .nav-more-trigger:hover{color:var(--gold);}
+    .nav-more-item:not(.is-locked):hover{background:rgba(111,207,58,0.08); color:var(--cream2);}
+    .copy-btn:hover{border-color:var(--green-bright); color:var(--green-bright);}
+    .contract-address:hover{color:var(--green-bright); border-color:var(--green-bright);}
+    .rank-live-badge:hover{color:#8ade56;}
+    .hood-game-ranks-tab:not(.is-active):hover{color:var(--cream2); border-color:rgba(241,234,220,0.35);}
+    .hood-game-save-btn:not(:disabled):hover{background:rgba(224,178,58,0.38);}
+    .hood-game-save-skip:hover{color:var(--cream2);}
+    .topbar-cta:hover{
+      box-shadow:0 0 20px 2px rgba(232,212,77,0.55), 0 0 40px 4px rgba(232,212,77,0.25);
+      transform:translateY(-1px);
+    }
+    .btn:not(:disabled):hover{transform:translateY(-2px);}
+    .btn-primary:not(:disabled):hover{
+      box-shadow:0 10px 24px -10px rgba(111,207,58,0.55), 0 0 24px 4px rgba(111,207,58,0.5), 0 0 46px 8px rgba(111,207,58,0.25);
+    }
+    .btn-ghost:hover{
+      border-color:var(--green-bright);
+      box-shadow:0 0 20px 2px rgba(111,207,58,0.4), 0 0 40px 4px rgba(111,207,58,0.2);
+    }
+    .lore-card:hover{
+      border-color:#f5e77a;
+      box-shadow:inset 0 0 0 4px rgba(12,23,16,0.9), inset 0 0 0 5px rgba(139,232,90,0.65),
+        0 0 40px -2px rgba(139,232,90,0.7);
+    }
+    .face-card:hover{
+      transform:scale(1.06) translateY(-8px);
+      border-color:#f5e77a; z-index:30;
+      box-shadow:0 18px 36px -6px rgba(139,232,90,0.7);
+    }
+    .face-card:hover .face-label{color:var(--cream2);}
+    .ledger:hover{
+      border-color:#f5e77a;
+      box-shadow:inset 0 0 0 3px rgba(12,23,16,0.9), inset 0 0 0 4px rgba(139,232,90,0.6),
+        0 0 40px -2px rgba(139,232,90,0.7);
+    }
+    .comm-card:hover{
+      transform:translateY(-3px); border-color:var(--green-bright);
+      box-shadow:0 0 20px 2px rgba(111,207,58,0.35), 0 0 40px 4px rgba(111,207,58,0.18);
+    }
+    .quicklink-card:hover{
+      transform:translateY(-10px) scale(1.03); border-color:#f5e77a; z-index:10;
+      box-shadow:inset 0 0 0 3px rgba(12,23,16,0.9), inset 0 0 0 4px rgba(139,232,90,0.7),
+        0 22px 44px -6px rgba(139,232,90,0.75);
+    }
+    .wallet-option:not(:disabled):hover{
+      border-color:rgba(111,207,58,0.4); background:rgba(111,207,58,0.07);
+      box-shadow:0 0 20px -6px rgba(111,207,58,0.4);
+    }
+    .wallet-option:not(:disabled):hover .wallet-option-icon{
+      border-color:rgba(111,207,58,0.4); background:rgba(111,207,58,0.16);
+    }
+    .wallet-modal-close:hover{border-color:rgba(111,207,58,0.5); color:var(--cream2);}
+    .rank-copy-btn:hover{background:rgba(111,207,58,0.18); border-color:rgba(111,207,58,0.5);}
+    .rank-explorer-link:hover{color:#8ade56; border-color:#8ade56;}
+    .rank-switch-link:hover{color:var(--cream2); text-decoration-color:rgba(238,244,234,0.6);}
+    .face-draw-share:hover{border-color:rgba(238,244,234,0.5); background:rgba(238,244,234,0.12);}
+    .hood-ladder-item:hover{
+      border-color:rgba(111,207,58,0.35);
+      box-shadow:0 0 24px -6px rgba(111,207,58,0.35);
+    }
+    .hood-faq-item:hover{border-color:rgba(111,207,58,0.35);}
+  }

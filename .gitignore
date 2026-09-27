@@ -1,0 +1,9 @@
+.DS_Store
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+
+# Generated local links point into node_modules outside this repository.
+CapApp-SPM/symlinks/
