@@ -1075,10 +1075,9 @@ if (canvas) {
     nextPumpCheckAt = elapsed + 1400 + Math.random() * 1200;
 
   }, getItemMinGap = function(typeA, typeB) {
-    // Tuyet doi khong cho coin de len hoac xuat hien sat bat ky cay nen nao (do hay xanh)
     const isCoinAndCandle = (typeA === "coin" && (typeB === "candle" || typeB === "greenCandle" || typeB === "obstacle")) ||
                             (typeB === "coin" && (typeA === "candle" || typeA === "greenCandle" || typeA === "obstacle"));
-    if (isCoinAndCandle) return 140; // Khoang cach toi thieu 140px dam bao khong bao gio de len nen
+    if (isCoinAndCandle) return 140;
     if (typeA === "pump" || typeB === "pump") return 110;
     if (typeA === "rugged" || typeB === "rugged") return 80;
     if (typeA === "coin" && typeB === "coin") return 45;
@@ -1091,7 +1090,7 @@ if (canvas) {
     while (changed && loops < 60) {
       loops++;
       changed = false;
-      for (let l = 0; l < 4; l++) {
+      for (let l = 0; l < lists.length; l++) {
         const arr = lists[l];
         for (let i = 0; i < arr.length; i++) {
           const item = arr[i];
@@ -1110,8 +1109,8 @@ if (canvas) {
     }
     return x;
   }, spawnPumpGreenCandle = function() {
-    const h = 66;
-    const w = 36;
+    const h = 66 * GREEN_CANDLE_SCALE;
+    const w = 36 * GREEN_CANDLE_SCALE;
     const hover = Math.random() < 0.45;
     const y = hover ? GROUND_Y - GROUND_HEIGHT - 38 - Math.random() * 24 : GROUND_Y - h - 4;
     const x = findSafeSpawnX(CW + 20, w, "greenCandle");
@@ -1214,8 +1213,8 @@ if (canvas) {
       : GREEN_CANDLE_TIERS.find((item) => roll < item.cutoff);
     scheduleNextGreenCandle();
     if (!tier) return;
-    const h = tier.height;
-    const w = 36;
+    const h = tier.height * GREEN_CANDLE_SCALE;
+    const w = 36 * GREEN_CANDLE_SCALE;
     const hover = Math.random() < 0.45;
     const y = hover ? GROUND_Y - GROUND_HEIGHT - 38 - Math.random() * 24 : GROUND_Y - h - 4;
     const x = findSafeSpawnX(CW + 20, w, "greenCandle");
@@ -1226,6 +1225,7 @@ if (canvas) {
     spawnTimer = 0;
     spawnBlinkOn = true;
     hideOverlay();
+    lastTs = 0;
     ensureLoopRunning();
     startRun2();
     startMusicPlayback();
@@ -1306,8 +1306,8 @@ if (canvas) {
   }, updateHitBlink = function(dt) {
     hitTimer += dt;
     if (!player2.grounded) {
+      player2.y += (player2.vy + GRAVITY * dt * 0.5) * dt;
       player2.vy += GRAVITY * dt;
-      player2.y += player2.vy * dt;
       if (player2.y >= GROUND_Y - GROUND_HEIGHT) {
         player2.y = GROUND_Y - GROUND_HEIGHT;
         player2.vy = 0;
@@ -1480,8 +1480,8 @@ if (canvas) {
     speed = Math.min(MAX_SPEED, BASE_SPEED + elapsed * SPEED_RAMP);
     score += dt * speed * 0.05;
     if (!player2.grounded) {
+      player2.y += (player2.vy + GRAVITY * dt * 0.5) * dt;
       player2.vy += GRAVITY * dt;
-      player2.y += player2.vy * dt;
       if (player2.y >= GROUND_Y - GROUND_HEIGHT) {
         player2.y = GROUND_Y - GROUND_HEIGHT;
         player2.vy = 0;
@@ -1496,14 +1496,14 @@ if (canvas) {
     }
     if (player2.grounded) {
       player2.runTimer += dt * speed;
-      while (player2.runTimer > 28) {
+      while (player2.runTimer >= 28) {
         player2.runTimer -= 28;
         player2.runFrame = (player2.runFrame + 1) % SPRITES.run.frames;
       }
     } else {
       player2.jumpTimer += dt;
-      while (player2.jumpTimer > 64 && player2.jumpFrame < SPRITES.jump.frames - 1) {
-        player2.jumpTimer -= 64;
+      while (player2.jumpTimer >= 34 && player2.jumpFrame < SPRITES.jump.frames - 1) {
+        player2.jumpTimer -= 34;
         player2.jumpFrame++;
       }
     }
@@ -1560,8 +1560,8 @@ if (canvas) {
       const c = coins[i];
       c.x -= dx;
       c.timer += dt;
-      if (c.timer > 45) {
-        c.timer = 0;
+      while (c.timer >= 45) {
+        c.timer -= 45;
         c.frame = (c.frame + 1) % SPRITES.coin.frames;
       }
       if (c.x + c.w <= -20 || c.taken) coins.splice(i, 1);
@@ -1622,9 +1622,11 @@ if (canvas) {
       p.life += dt;
       if (p.life >= p.dur) popups.splice(i, 1);
     }
-    const backgroundCycleWidth = bgDrawW * 2;
-    if (backgroundCycleWidth > 0) {
-      bgScrollX = (bgScrollX - dx * 0.5) % backgroundCycleWidth;
+    bgScrollX -= dx * 0.5;
+    const completedIntroDistance = Math.max(0, -bgScrollX - bgIntroDrawW);
+    const loopCycleWidth = bgLoopDrawW * 2;
+    if (loopCycleWidth > 0 && completedIntroDistance > loopCycleWidth) {
+      bgScrollX += loopCycleWidth;
     }
     // playerHitBox already updated freshly above
     for (let i = 0; i < obstacles.length; i++) {
@@ -1698,17 +1700,69 @@ if (canvas) {
   }, drawFrame = function(sprite, frameIndex, x, y, w, h) {
     if (sprite === SPRITES.jump && frameIndex >= 3 && frameIndex <= 10) frameIndex = frameIndex <= 6 ? 2 : 11;
     const img = sprite.img;
-    ctx.drawImage(img, frameIndex * sprite.frameW, 0, sprite.frameW, sprite.frameH, x, y, w, h);
+    ctx.drawImage(img, frameIndex * sprite.frameW, 0, sprite.frameW, sprite.frameH, Math.round(x), Math.round(y), Math.round(w), Math.round(h));
   }, drawGreenCandle = function(candle) {
     const spriteKey = candle.spriteKey;
     const sprite = (spriteKey && SPRITES[spriteKey]) || SPRITES.greenCandle || SPRITES.candle;
     if (sprite && sprite.img) {
-      const b = spriteKey && GREEN_CANDLE_BOUNDS[spriteKey];
-      if (b) {
-        ctx.drawImage(sprite.img, b.sx, b.sy, b.sw, b.sh, candle.x, candle.y, candle.w, candle.h);
-      } else {
-        ctx.drawImage(sprite.img, candle.x, candle.y, candle.w, candle.h);
-      }
+      const tinted = spriteKey && tintedGreenCandleSprites[spriteKey];
+      if (tinted) ctx.drawImage(tinted, candle.x, candle.y, candle.w, candle.h);
+      else ctx.drawImage(sprite.img, candle.x, candle.y, candle.w, candle.h);
+    }
+  }, cacheTintedGreenCandles = function() {
+    tintedGreenCandleSprites = {};
+    for (const [spriteKey, bounds] of Object.entries(GREEN_CANDLE_BOUNDS)) {
+      const sprite = SPRITES[spriteKey];
+      if (!sprite || !sprite.img) continue;
+      const tinted = document.createElement("canvas");
+      tinted.width = bounds.sw;
+      tinted.height = bounds.sh;
+      const tintedCtx = tinted.getContext("2d");
+      tintedCtx.filter = "hue-rotate(18deg) saturate(2.1) brightness(1.35)";
+      tintedCtx.drawImage(sprite.img, bounds.sx, bounds.sy, bounds.sw, bounds.sh, 0, 0, bounds.sw, bounds.sh);
+      tintedGreenCandleSprites[spriteKey] = tinted;
+    }
+  }, cacheBackgroundSurfaces = function() {
+    const introBackground = SPRITES.background && SPRITES.background.img;
+    const loopBackground = SPRITES.backgroundLoop && SPRITES.backgroundLoop.img;
+    if (!introBackground || !loopBackground) return;
+
+    const introGroundY = introBackground.naturalHeight * 0.81;
+    const loopGroundY = loopBackground.naturalHeight * 0.81;
+    const introScale = GROUND_Y / introGroundY;
+    const loopScale = GROUND_Y / loopGroundY;
+
+    bgLoopSourceX = Math.round(loopBackground.naturalWidth * 0.15);
+    bgIntroDrawW = Math.round(introBackground.naturalWidth * introScale);
+    bgIntroDrawH = Math.round(introBackground.naturalHeight * introScale);
+    bgLoopDrawW = Math.round((loopBackground.naturalWidth - bgLoopSourceX) * loopScale);
+    bgLoopDrawH = Math.round(loopBackground.naturalHeight * loopScale);
+
+    try {
+      const sourceW = loopBackground.naturalWidth - bgLoopSourceX;
+      const sourceH = loopBackground.naturalHeight;
+
+      cachedIntroBg = document.createElement("canvas");
+      cachedIntroBg.width = bgIntroDrawW;
+      cachedIntroBg.height = bgIntroDrawH;
+      const introCtx = cachedIntroBg.getContext("2d");
+      introCtx.drawImage(introBackground, 0, 0, bgIntroDrawW, bgIntroDrawH);
+
+      cachedNormalLoop = document.createElement("canvas");
+      cachedNormalLoop.width = bgLoopDrawW;
+      cachedNormalLoop.height = bgLoopDrawH;
+      const normalCtx = cachedNormalLoop.getContext("2d");
+      normalCtx.drawImage(loopBackground, bgLoopSourceX, 0, sourceW, sourceH, 0, 0, bgLoopDrawW, bgLoopDrawH);
+
+      cachedMirroredLoop = document.createElement("canvas");
+      cachedMirroredLoop.width = bgLoopDrawW;
+      cachedMirroredLoop.height = bgLoopDrawH;
+      const mirrorCtx = cachedMirroredLoop.getContext("2d");
+      mirrorCtx.translate(bgLoopDrawW, 0);
+      mirrorCtx.scale(-1, 1);
+      mirrorCtx.drawImage(loopBackground, bgLoopSourceX, 0, sourceW, sourceH, 0, 0, bgLoopDrawW, bgLoopDrawH);
+    } catch (e) {
+      console.warn("Candle Rush: Background surface caching failed", e);
     }
   }, playerVisible = function() {
     if (state === STATE.LOADING || state === STATE.IDLE) return false;
@@ -1750,24 +1804,70 @@ if (canvas) {
     const sh = 9 * (1 - t * 0.4);
     ctx.globalAlpha = alpha;
     ctx.beginPath();
-    ctx.ellipse(cx, GROUND_Y + 3, Math.max(1, sw / 2), Math.max(1, sh / 2), 0, 0, Math.PI * 2);
+    ctx.ellipse(Math.round(cx), GROUND_Y + 3, Math.max(1, Math.round(sw / 2)), Math.max(1, Math.round(sh / 2)), 0, 0, Math.PI * 2);
     ctx.fill();
   }, draw = function() {
     ctx.clearRect(0, 0, CW, CH);
-    const bg = SPRITES.background.img;
-    const backgroundCycleWidth = bgDrawW * 2;
-    const normalizedScroll = (bgScrollX % backgroundCycleWidth + backgroundCycleWidth) % backgroundCycleWidth;
-    let pairX = normalizedScroll - backgroundCycleWidth;
-    while (pairX < CW) {
-      ctx.drawImage(bg, 0, 0, bg.naturalWidth, bgSourceH, pairX, 0, bgDrawW, GROUND_Y);
+    const introBackground = cachedIntroBg || (SPRITES.background && SPRITES.background.img);
+    const loopBackground = cachedNormalLoop || (SPRITES.backgroundLoop && SPRITES.backgroundLoop.img);
+    const introX = bgScrollX;
+    if (introX + bgIntroDrawW > 0 && introBackground) {
+      ctx.drawImage(introBackground, Math.floor(introX), 0, bgIntroDrawW, bgIntroDrawH);
+    }
 
-      ctx.save();
-      ctx.translate(pairX + backgroundCycleWidth, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(bg, 0, 0, bg.naturalWidth, bgSourceH, 0, 0, bgDrawW, GROUND_Y);
-      ctx.restore();
+    let tileX = introX + bgIntroDrawW;
+    let tileIndex = 0;
+    if (tileX + bgLoopDrawW < 0) {
+      const skippedTiles = Math.floor(-tileX / bgLoopDrawW);
+      tileX += skippedTiles * bgLoopDrawW;
+      tileIndex += skippedTiles;
+      if (tileX > 0) {
+        tileX -= bgLoopDrawW;
+        tileIndex -= 1;
+      }
+    }
 
-      pairX += backgroundCycleWidth;
+    while (tileX < CW) {
+      const mirrored = tileIndex % 2 === 0;
+      if (mirrored) {
+        if (cachedMirroredLoop) {
+          ctx.drawImage(cachedMirroredLoop, Math.floor(tileX), 0, bgLoopDrawW + 1, bgLoopDrawH);
+        } else if (loopBackground) {
+          ctx.save();
+          ctx.translate(tileX + bgLoopDrawW, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(
+            loopBackground,
+            bgLoopSourceX,
+            0,
+            loopBackground.naturalWidth - bgLoopSourceX,
+            loopBackground.naturalHeight,
+            0,
+            0,
+            bgLoopDrawW,
+            bgLoopDrawH
+          );
+          ctx.restore();
+        }
+      } else {
+        if (cachedNormalLoop) {
+          ctx.drawImage(cachedNormalLoop, Math.floor(tileX), 0, bgLoopDrawW + 1, bgLoopDrawH);
+        } else if (loopBackground) {
+          ctx.drawImage(
+            loopBackground,
+            bgLoopSourceX,
+            0,
+            loopBackground.naturalWidth - bgLoopSourceX,
+            loopBackground.naturalHeight,
+            tileX,
+            0,
+            bgLoopDrawW,
+            bgLoopDrawH
+          );
+        }
+      }
+      tileX += bgLoopDrawW;
+      tileIndex += 1;
     }
     ctx.fillStyle = "#1a2916";
     for (let i = 0; i < coins.length; i++) {
@@ -1816,15 +1916,17 @@ if (canvas) {
 
       if (eventFreeze.type === "pump") {
         ctx.font = "bold 34px 'Times New Roman', Times, serif";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.strokeText("+" + (eventFreeze.pumpBonus || 1000), hx, hy);
         ctx.fillStyle = "#4eff87";
-        ctx.shadowColor = "rgba(78, 255, 135, 1)";
-        ctx.shadowBlur = 20;
         ctx.fillText("+" + (eventFreeze.pumpBonus || 1000), hx, hy);
       } else if (eventFreeze.type === "rugged") {
         ctx.font = "bold 34px 'Times New Roman', Times, serif";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.strokeText("-90%", hx, hy);
         ctx.fillStyle = "#ff3333";
-        ctx.shadowColor = "rgba(255, 51, 51, 1)";
-        ctx.shadowBlur = 20;
         ctx.fillText("-90%", hx, hy);
       }
       ctx.restore();
@@ -1834,22 +1936,16 @@ if (canvas) {
       ctx.save();
       ctx.textAlign = "center";
       ctx.font = "bold 32px 'Times New Roman', Times, serif";
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.65)";
       for (let i = 0; i < popups.length; i++) {
         const p = popups[i];
         const t = p.life / p.dur;
+        const curY = p.y - t * 42;
         ctx.globalAlpha = Math.max(0, 1 - t);
+        ctx.strokeText(p.text, p.x, curY);
         ctx.fillStyle = p.color || "#e0b23a";
-        if (p.color === "#ff4d4d" || p.color === "#ff3b30") {
-          ctx.shadowColor = "rgba(255, 59, 48, 1)";
-          ctx.shadowBlur = 20;
-        } else if (p.color === "#4eff87" || p.color === "#30d158") {
-          ctx.shadowColor = "rgba(78, 255, 135, 1)";
-          ctx.shadowBlur = 20;
-        } else {
-          ctx.shadowColor = "rgba(246, 215, 115, 0.9)";
-          ctx.shadowBlur = 16;
-        }
-        ctx.fillText(p.text, p.x, p.y - t * 42);
+        ctx.fillText(p.text, p.x, curY);
       }
       ctx.restore();
     }
@@ -1864,14 +1960,41 @@ if (canvas) {
       lastTs = 0;
       return;
     }
-    if (!lastTs) lastTs = ts;
-    const dt = Math.min(48, ts - lastTs);
+    if (!lastTs) {
+      lastTs = ts;
+      if (assetsReady) draw();
+      if (state === STATE.PLAYING || state === STATE.SPAWN || (state === STATE.OVER && !resultShown)) {
+        requestAnimationFrame(loop);
+      } else {
+        loopScheduled = false;
+      }
+      return;
+    }
+
+    const elapsed = ts - lastTs;
     lastTs = ts;
-    if (state === STATE.PLAYING) update(dt);
-    else if (state === STATE.SPAWN) updateSpawn(dt);
-    else if (state === STATE.OVER && !resultShown) updateHitBlink(dt);
+
+    // Clamp delta time to avoid large jumps if browser was tabbed or throttled (min 1ms, max 33.3ms)
+    const dt = Math.min(33.33, Math.max(1, elapsed));
+
+    // For physics accuracy and collision stability, if dt > 18ms (e.g. 30fps drop),
+    // sub-step in two passes of dt/2.
+    if (dt > 18) {
+      const halfDt = dt * 0.5;
+      for (let s = 0; s < 2; s++) {
+        if (state === STATE.PLAYING) update(halfDt);
+        else if (state === STATE.SPAWN) updateSpawn(halfDt);
+        else if (state === STATE.OVER && !resultShown) updateHitBlink(halfDt);
+      }
+    } else {
+      if (state === STATE.PLAYING) update(dt);
+      else if (state === STATE.SPAWN) updateSpawn(dt);
+      else if (state === STATE.OVER && !resultShown) updateHitBlink(dt);
+    }
+
     if (assetsReady) draw();
-    if (state === STATE.PLAYING || state === STATE.SPAWN || state === STATE.OVER && !resultShown) {
+
+    if (state === STATE.PLAYING || state === STATE.SPAWN || (state === STATE.OVER && !resultShown)) {
       requestAnimationFrame(loop);
     } else {
       loopScheduled = false;
@@ -2263,7 +2386,7 @@ if (canvas) {
     primeAudio();
     jump();
   };
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { alpha: false });
   const scoreEl = document.getElementById("hoodGameScore");
   const bestEl = document.getElementById("hoodGameBest");
   const overlay2 = document.getElementById("hoodGameOverlay");
@@ -2297,6 +2420,7 @@ if (canvas) {
   const ASSET_BASE = "/game/";
   const SPRITES = {
     background: { src: "background.png" },
+    backgroundLoop: { src: "background-loop.png" },
     stand: { src: "character-stand.png", frames: 1 },
     // static pose shown only during the SPAWN flicker -- the run cycle doesn't start until real movement (PLAYING) begins
     run: { src: "character-run.png", frames: 6 },
@@ -2316,8 +2440,15 @@ if (canvas) {
   let standAspect = 0.63;
   let runAspect = 0.89;
   let jumpAspect = 0.85;
-  let bgDrawW = 0;
-  let bgSourceH = 0;
+  let bgIntroDrawW = 0;
+  let bgLoopDrawW = 0;
+  let bgIntroDrawH = 0;
+  let bgLoopDrawH = 0;
+  let bgLoopSourceX = 0;
+  let tintedGreenCandleSprites = {};
+  let cachedIntroBg = null;
+  let cachedNormalLoop = null;
+  let cachedMirroredLoop = null;
   const STATE = { LOADING: "loading", IDLE: "idle", SPAWN: "spawn", PLAYING: "playing", OVER: "over" };
   let state = STATE.LOADING;
   const mobileShell = document.body.dataset.mobile === "true";
@@ -2334,6 +2465,8 @@ if (canvas) {
   const BASE_SPEED = 0.32;
   const MAX_SPEED = 0.75;
   const SPEED_RAMP = 6e-6;
+  const FIXED_TIMESTEP = 1000 / 60;
+  const MAX_FRAME_STEPS = 4;
   const player2 = {
     x: 90,
     y: GROUND_Y - GROUND_HEIGHT,
@@ -2352,6 +2485,7 @@ if (canvas) {
     greenCandle3: { sx: 25, sy: 162, sw: 162, sh: 561 },
     greenCandle4: { sx: 26, sy: 23,  sw: 163, sh: 838 }
   };
+  const GREEN_CANDLE_SCALE = 0.8;
   const GREEN_CANDLE_TIERS = [
     { points: 1000, height: 94, spriteKey: "greenCandle4", cutoff: 0.01 },
     { points: 500, height: 80, spriteKey: "greenCandle3", cutoff: 0.06 },
@@ -2381,6 +2515,7 @@ if (canvas) {
   let nextGreenCandleAt = 0;
   let bgScrollX = 0;
   let lastTs = 0;
+  let frameAccumulator = 0;
   let overSince = 0;
   updateBestLabel();
   let clusterChain = 0;
@@ -2388,7 +2523,7 @@ if (canvas) {
   const CANDLE_HEIGHT_RATIOS = [0.5, 0.72, 0.95, 1.2, 1.4, 1.6];
   const PAIRED_CANDLE_RATIOS = [0.5, 0.72];
   const RUGGED_CHANCE = 0.05; // Ti le rugged la 5%
-  const RUGGED_MIN_ELAPSED = 15;
+  const RUGGED_MIN_ELAPSED = 15000;
   const FALL_SPEED = 0.6;
   const OVERLAY_DELAY_MS = 1e3;
   const RESTART_COOLDOWN = 1e3;
@@ -2528,7 +2663,10 @@ if (canvas) {
       if (width === CW) return;
       CW = width;
       canvas.width = width;
-      if (assetsReady) draw();
+      if (assetsReady) {
+        cacheBackgroundSurfaces();
+        draw();
+      }
     };
     window.addEventListener("resize", fitMobileCanvas);
     fitMobileCanvas();
@@ -2830,10 +2968,8 @@ if (canvas) {
         sprite.frameH = sprite.img.naturalHeight;
       }
     });
-    const background = SPRITES.background.img;
-    // Crop at the painted ground line so it aligns with the gameplay surface.
-    bgSourceH = Math.round(background.naturalHeight * 0.865);
-    bgDrawW = background.naturalWidth * (GROUND_Y / bgSourceH);
+    cacheTintedGreenCandles();
+    cacheBackgroundSurfaces();
     assetsReady = true;
     document.dispatchEvent(new Event("hood-assets-ready"));
     state = STATE.IDLE;

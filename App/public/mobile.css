@@ -12,7 +12,7 @@ body:not([data-entry="welcome"]):not([data-busy="true"]) #hoodGameWrap{animation
 @keyframes game-entry-fade{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){body:not([data-entry="welcome"]):not([data-busy="true"]) #hoodGameWrap{animation:none;opacity:1}}
 #hoodGameWrap{position:absolute;inset:0;max-width:none;width:100%;height:100%;margin:0;border:0;border-radius:0;box-shadow:none;touch-action:manipulation;outline:none}
-#hoodGameCanvas{width:100%;height:100%;max-width:none;max-height:none;touch-action:none}
+#hoodGameCanvas{width:100%;height:100%;max-width:none;max-height:none;touch-action:none;transform:translate3d(0,0,0);-webkit-transform:translate3d(0,0,0);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 #game .hood-game-hud{top:var(--mobile-top);padding-left:var(--mobile-left);font-size:24px;color:#f0ffe6;text-shadow:0 2px 4px #000}
 #game .hood-game-best,#game #hoodGameBest,.hood-game-best{display:none !important}
 #game .hood-game-version-badge{left:var(--mobile-left);bottom:var(--mobile-bottom);font-size:14px;font-weight:600;color:#d9f5c9;text-shadow:0 2px 4px #000}

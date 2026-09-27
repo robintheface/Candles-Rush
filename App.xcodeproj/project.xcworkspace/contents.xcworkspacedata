@@ -7,4 +7,10 @@
    <FileRef
       location = "group:leaderboard-security-remediation.md">
    </FileRef>
+   <FileRef
+      location = "group:xcode-security-audit-plan.md">
+   </FileRef>
+   <FileRef
+      location = "group:xcode-security-settings.md">
+   </FileRef>
 </Workspace>

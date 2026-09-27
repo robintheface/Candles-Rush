@@ -65,9 +65,14 @@ class GameViewController: CAPBridgeViewController, WKScriptMessageHandler {
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        let origin = message.frameInfo.securityOrigin
         guard message.name == "audioSession",
+              message.frameInfo.isMainFrame,
+              origin.protocol.lowercased() == "capacitor",
+              origin.host.lowercased() == "localhost",
               let command = message.body as? [String: Any],
-              let action = command["action"] as? String else { return }
+              let action = command["action"] as? String,
+              GameAudioPlayer.allowedActions.contains(action) else { return }
         if action == "configure" {
             (UIApplication.shared.delegate as? AppDelegate)?.activateAudioSession()
         } else if action == "resume" || action == "playMusic" {
@@ -94,6 +99,18 @@ private final class AudioCommand: @unchecked Sendable {
 }
 
 private final class GameAudioPlayer: @unchecked Sendable {
+    static let allowedActions: Set<String> = [
+        "configure", "playMusic", "stopMusic", "playSfx", "startRun", "stopRun",
+        "setMusicVolume", "setSfxVolume", "setMuted", "pause", "resume"
+    ]
+
+    private static let allowedAudioFiles: Set<String> = [
+        "1sound.mp3", "2sound.mp3", "3sound.mp3", "5sound.mp3",
+        "main-1.mp3", "main-2.mp3", "main-3.mp3", "main-4.mp3", "main-5.mp3",
+        "bonus-time.mp3", "bonus-1.mp3", "bonus-2.mp3", "bonus-3.mp3", "bonus-4.mp3", "bonus-5.mp3", "bonus-6.mp3",
+        "jumping.mp3", "landing.mp3", "coin.mp3", "impact.mp3", "running.mp3", "levelup.mp3"
+    ]
+
     private let audioQueue = DispatchQueue(label: "fun.robintheface.marketrunner.game-audio", qos: .userInitiated)
     private var musicPlayer: AVAudioPlayer?
     private var currentMusicFile: String?
@@ -140,7 +157,8 @@ private final class GameAudioPlayer: @unchecked Sendable {
             currentMusicFile = command["file"] as? String
             musicPlayer = makePlayer(file: currentMusicFile, loops: -1, volume: 0)
             musicPlayer?.play()
-            let fadeDuration = (command["fadeDuration"] as? NSNumber)?.doubleValue ?? 3
+            let requestedFade = (command["fadeDuration"] as? NSNumber)?.doubleValue ?? 3
+            let fadeDuration = requestedFade.isFinite ? min(10, max(0, requestedFade)) : 3
             musicPlayer?.setVolume(effectiveMusicVolume, fadeDuration: fadeDuration)
         case "stopMusic":
             musicPlayer?.stop()
@@ -149,7 +167,10 @@ private final class GameAudioPlayer: @unchecked Sendable {
         case "playSfx":
             updateVolumes(command)
             effectPlayers.removeAll { !$0.isPlaying }
-            guard let player = makePlayer(file: command["file"] as? String, loops: 0, volume: sfxVolume) else { return }
+            if effectPlayers.count >= 12 {
+                effectPlayers.removeFirst().stop()
+            }
+            guard let player = makePlayer(file: command["file"] as? String, loops: 0, volume: effectiveSfxVolume) else { return }
             effectPlayers.append(player)
             player.play()
         case "startRun":
@@ -196,14 +217,17 @@ private final class GameAudioPlayer: @unchecked Sendable {
     private var effectiveSfxVolume: Float { isMuted ? 0 : sfxVolume }
 
     private func updateVolumes(_ command: [String: Any]) {
-        if let value = command["music"] as? NSNumber { musicVolume = value.floatValue }
-        if let value = command["sfx"] as? NSNumber { sfxVolume = value.floatValue }
+        if let value = command["music"] as? NSNumber, value.floatValue.isFinite {
+            musicVolume = min(1, max(0, value.floatValue))
+        }
+        if let value = command["sfx"] as? NSNumber, value.floatValue.isFinite {
+            sfxVolume = min(1, max(0, value.floatValue))
+        }
         if let value = command["muted"] as? Bool { isMuted = value }
     }
 
     private func makePlayer(file: String?, loops: Int, volume: Float) -> AVAudioPlayer? {
-        guard let file else {
-            print("Candle Rush: native audio file not found: nil")
+        guard let file, Self.allowedAudioFiles.contains(file) else {
             return nil
         }
 
