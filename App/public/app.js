@@ -969,7 +969,7 @@ function initEntry(byId2, onEnter) {
   if (donateBtn) {
     donateBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      const url = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=huakt@icloud.com&item_name=Support+Candle+Rush&currency_code=USD";
+      const url = "https://www.patreon.com/cw/ERICKIEU/membership";
       window.open(url, "_blank");
     });
   }
@@ -2403,9 +2403,22 @@ if (canvas) {
     const now = performance.now();
     if (now - lastTapTs < 50) return;
     if (now < inputLockedUntil) return;
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : null);
     const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : null);
     if (clientY != null && (clientY >= window.innerHeight - 46 || clientY <= 15)) return;
     if (e.target && e.target.closest && e.target.closest("a, button, input, #hoodGameSettingsPanel, #hoodGameRanksPanel, #hoodGameSaveScore, .nav-links, .nav-more, .topbar-right")) return;
+    const sBtn = typeof settingsBtn !== "undefined" && settingsBtn ? settingsBtn : document.getElementById("hoodGameSettingsBtn");
+    if (sBtn) {
+      if (e.target && (e.target === sBtn || sBtn.contains(e.target))) return;
+      if (clientX != null && clientY != null) {
+        const r = sBtn.getBoundingClientRect();
+        const safeMargin = 28;
+        if (clientX >= r.left - safeMargin && clientX <= r.right + safeMargin &&
+            clientY >= r.top - safeMargin && clientY <= r.bottom + safeMargin) {
+          return;
+        }
+      }
+    }
     const inFrame = !!(wrapEl && wrapEl.contains(e.target));
     if (!inFrame && (state === STATE.IDLE || state === STATE.OVER)) return;
     lastTapTs = now;
@@ -2766,6 +2779,9 @@ if (canvas) {
         closeSettings();
       });
     }
+    const stopBtnEvent = (e) => { e.stopPropagation(); };
+    settingsBtn.addEventListener("touchstart", stopBtnEvent, { passive: true });
+    settingsBtn.addEventListener("pointerdown", stopBtnEvent);
     settingsBtn.addEventListener("click", () => {
       if (settingsPanel2.hidden) {
         settingsPanel2.hidden = false;

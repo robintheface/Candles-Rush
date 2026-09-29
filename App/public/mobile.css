@@ -106,11 +106,11 @@ body[data-intro="true"] #welcomeScreen{visibility:hidden}
 .welcome-card{box-sizing:border-box;width:min(100%,330px);justify-self:center;text-align:left;border-left:1px solid #d4b96330;padding:12px 0 12px clamp(18px,3vw,32px)}
 .welcome-kicker{font:9px 'IBM Plex Mono',monospace;letter-spacing:.18em;color:#e9be4b;margin:0 0 12px}
 .welcome-card h2{font-size:clamp(26px,8dvh,36px);line-height:1.05;font-weight:400;margin:0 0 10px;color:#f4eedc}
-.welcome-subtitle{font-size:14px;color:#b4c5a6;margin:0 0 22px}
+.welcome-subtitle{font:11px/1.45 'IBM Plex Mono',monospace;color:#b4c5a6;margin:0 0 18px}
 
 .google-mark{font:bold 23px Arial,sans-serif;color:#4285f4}
-#signInStatus{font:10px/1.5 'IBM Plex Mono',monospace;color:#c1b58e;margin:10px 0 0;min-height:30px}
-.welcome-local-note{font:9px/1.5 'IBM Plex Mono',monospace;color:#91a589;margin:8px 0 0}
+#signInStatus{font:11px/1.45 'IBM Plex Mono',monospace;color:#c1b58e;margin:8px 0 0;min-height:18px}
+.welcome-local-note{font:11px/1.45 'IBM Plex Mono',monospace;color:#91a589;margin:8px 0 0}
 @media(max-height:350px){.welcome-kicker{margin-bottom:7px}.welcome-subtitle{margin-bottom:12px}.welcome-card{padding-top:4px;padding-bottom:4px}}
 
 /* Animate MAIN's six original run frames without an extra GIF download. */
@@ -154,6 +154,7 @@ body[data-intro="true"] #welcomeScreen{visibility:hidden}
 #game #hoodGameBest,#game .hood-game-best,.hood-game-best,#game #hoodGameVersionBadge,#game #pauseButton{display:none !important}
 #game #hoodGameScore,#game #hoodGameBest{font-size:26px;border:0;background:none;contain:layout style paint;will-change:contents}
 #game .hood-game-settings-btn{position:absolute;top:var(--mobile-top);right:var(--mobile-right);display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:12px;background:radial-gradient(circle at 35% 35%,rgba(28,52,35,.92),rgba(10,22,14,.96));border:1px solid rgba(224,178,58,.45);box-shadow:0 6px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.15);color:#f4eedc;opacity:1;transition:transform .12s ease,border-color .15s ease,background .15s ease;touch-action:manipulation}
+#game .hood-game-settings-btn::before{content:'';position:absolute;inset:-18px;border-radius:20px;z-index:1;touch-action:manipulation}
 #game .hood-game-settings-btn:active{transform:scale(.92);background:rgba(224,178,58,.25);border-color:rgba(240,200,88,.8)}
 #game .hood-game-settings-btn svg{width:22px;height:22px;color:#f5d573;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 #pauseScreen{position:fixed;inset:0;width:100dvw;height:100dvh;padding:0;margin:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(4,10,6,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;z-index:45;-webkit-tap-highlight-color:transparent}
