@@ -152,7 +152,7 @@ body[data-intro="true"] #welcomeScreen{visibility:hidden}
 #game,#game button,#game p,#game span,#game input{font-family:var(--ui-font)}
 #game #hoodGameScore,#game #hoodGameBest,#game #hoodGameVersion,#game .hood-game-ranks-num,#game .hood-game-ranks-score,#game .hood-game-overlay-score,#musicValue,#sfxValue,#welcomeBestScore{font-family:'Times New Roman',Times,serif}
 #game #hoodGameBest,#game .hood-game-best,.hood-game-best,#game #hoodGameVersionBadge,#game #pauseButton{display:none !important}
-#game #hoodGameScore,#game #hoodGameBest{font-size:26px;border:0;background:none}
+#game #hoodGameScore,#game #hoodGameBest{font-size:26px;border:0;background:none;contain:layout style paint;will-change:contents}
 #game .hood-game-settings-btn{position:absolute;top:var(--mobile-top);right:var(--mobile-right);display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:12px;background:radial-gradient(circle at 35% 35%,rgba(28,52,35,.92),rgba(10,22,14,.96));border:1px solid rgba(224,178,58,.45);box-shadow:0 6px 18px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.15);color:#f4eedc;opacity:1;transition:transform .12s ease,border-color .15s ease,background .15s ease;touch-action:manipulation}
 #game .hood-game-settings-btn:active{transform:scale(.92);background:rgba(224,178,58,.25);border-color:rgba(240,200,88,.8)}
 #game .hood-game-settings-btn svg{width:22px;height:22px;color:#f5d573;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}

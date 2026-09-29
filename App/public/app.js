@@ -1049,12 +1049,19 @@ if (canvas) {
     elapsed = 0;
     score = 0;
     lastDisplayedScore = -1;
+    lastScoreDomUpdate = 0;
     nextObstacleAt = 900;
     nextCoinAt = 1400;
     nextGreenCandleAt = 3e3 + Math.random() * 2e3;
     nextPumpCheckAt = 1200;
     bgScrollX = 0;
   }, scheduleNextObstacle = function() {
+    if (pumpActiveTimer > 0) {
+      // Tang gap 100% nen xanh khi an Pump (giam 50% thoi gian cho giua cac dot spawn de so luong nen tang gap doi)
+      const base = Math.max(300, (1500 - speed * 900) * 0.5);
+      nextObstacleAt = elapsed + base + Math.random() * base * 0.6;
+      return;
+    }
     if (clusterChain > 0) {
       clusterChain--;
       pendingClusterFollow = true;
@@ -1070,7 +1077,8 @@ if (canvas) {
   }, scheduleNextCoin = function() {
     nextCoinAt = elapsed + 1e3 + Math.random() * 1400;
   }, scheduleNextGreenCandle = function() {
-    nextGreenCandleAt = elapsed + 3500 + Math.random() * 3500;
+    const base = pumpActiveTimer > 0 ? 1500 : 3500;
+    nextGreenCandleAt = elapsed + base + Math.random() * base;
   }, scheduleNextPump = function() {
     nextPumpCheckAt = elapsed + 1400 + Math.random() * 1200;
 
@@ -1078,7 +1086,7 @@ if (canvas) {
     const isCoinAndCandle = (typeA === "coin" && (typeB === "candle" || typeB === "greenCandle" || typeB === "obstacle")) ||
                             (typeB === "coin" && (typeA === "candle" || typeA === "greenCandle" || typeA === "obstacle"));
     if (isCoinAndCandle) return 140;
-    if (typeA === "pump" || typeB === "pump") return 110;
+    if (typeA === "pump" || typeB === "pump") return 130;
     if (typeA === "rugged" || typeB === "rugged") return 80;
     if (typeA === "coin" && typeB === "coin") return 45;
     return 40;
@@ -1086,51 +1094,85 @@ if (canvas) {
     let x = startX;
     let changed = true;
     let loops = 0;
-    const lists = [obstacles, coins, greenCandles, pumps];
-    while (changed && loops < 60) {
+    while (changed && loops < 25) {
       loops++;
       changed = false;
-      for (let l = 0; l < lists.length; l++) {
-        const arr = lists[l];
-        for (let i = 0; i < arr.length; i++) {
-          const item = arr[i];
-          if (!item || item.taken) continue;
-          const itemW = item.w || 40;
-          const otherType = item.kind || (item.baseY !== undefined && item.floatAmp !== undefined ? "pump" : (item.percent !== undefined || item.spriteKey ? "greenCandle" : "candle"));
-          const reqGap = getItemMinGap(itemType, otherType);
-          if (x < item.x + itemW + reqGap && x + width > item.x - reqGap) {
-            x = item.x + itemW + reqGap;
-            changed = true;
-            break;
-          }
+      for (let i = 0; i < obstacles.length; i++) {
+        const item = obstacles[i];
+        if (!item) continue;
+        const itemW = item.w || 40;
+        const reqGap = getItemMinGap(itemType, item.kind || "candle");
+        if (x < item.x + itemW + reqGap && x + width > item.x - reqGap) {
+          x = item.x + itemW + reqGap;
+          changed = true;
+          break;
         }
-        if (changed) break;
+      }
+      if (changed) continue;
+      for (let i = 0; i < coins.length; i++) {
+        const item = coins[i];
+        if (!item || item.taken) continue;
+        const itemW = item.w || 40;
+        const reqGap = getItemMinGap(itemType, "coin");
+        if (x < item.x + itemW + reqGap && x + width > item.x - reqGap) {
+          x = item.x + itemW + reqGap;
+          changed = true;
+          break;
+        }
+      }
+      if (changed) continue;
+      for (let i = 0; i < greenCandles.length; i++) {
+        const item = greenCandles[i];
+        if (!item || item.taken) continue;
+        const itemW = item.w || 40;
+        const reqGap = getItemMinGap(itemType, "greenCandle");
+        if (x < item.x + itemW + reqGap && x + width > item.x - reqGap) {
+          x = item.x + itemW + reqGap;
+          changed = true;
+          break;
+        }
+      }
+      if (changed) continue;
+      for (let i = 0; i < pumps.length; i++) {
+        const item = pumps[i];
+        if (!item || item.taken) continue;
+        const itemW = item.w || 40;
+        const reqGap = getItemMinGap(itemType, "pump");
+        if (x < item.x + itemW + reqGap && x + width > item.x - reqGap) {
+          x = item.x + itemW + reqGap;
+          changed = true;
+          break;
+        }
       }
     }
     return x;
   }, spawnPumpGreenCandle = function() {
-    const h = 66 * GREEN_CANDLE_SCALE;
+    // Random nen xanh theo ti le da co san trong GREEN_CANDLE_TIERS
+    const roll = Math.random() * 0.36;
+    const tier = GREEN_CANDLE_TIERS.find((item) => roll < item.cutoff) || GREEN_CANDLE_TIERS[3];
+    const h = tier.height * GREEN_CANDLE_SCALE;
     const w = 36 * GREEN_CANDLE_SCALE;
     const hover = Math.random() < 0.45;
     const y = hover ? GROUND_Y - GROUND_HEIGHT - 38 - Math.random() * 24 : GROUND_Y - h - 4;
     const x = findSafeSpawnX(CW + 20, w, "greenCandle");
-    greenCandles.push({ kind: "greenCandle", x, y, w, h, spriteKey: "greenCandle2", taken: false });
+    greenCandles.push({ kind: "greenCandle", x, y, w, h, percent: tier.percent, points: tier.points, spriteKey: tier.spriteKey, taken: false });
   }, spawnPump = function() {
     scheduleNextPump();
     if (pumpActiveTimer > 0) return;
     if (Math.random() >= 0.02) return; // Ti le pump xuat hien la 2%
     const sprite = SPRITES.pump;
     if (!sprite || !sprite.img) return;
-    const ruggedH = Math.round(GROUND_HEIGHT * 0.66 * 0.70 * 2 * 0.70); // 59px
-    const h = Math.round(ruggedH * 1.30 * 1.20); // Tang pump size them 20% (92px)
+    // Tang size pump to gap doi theo yeu cau
+    const h = Math.round(GROUND_HEIGHT * 0.96); // ~84px (gap doi 42px)
     const aspect = sprite.img.naturalWidth / sprite.img.naturalHeight;
-    const w = Math.round(h * aspect);
+    const w = Math.round(h * aspect); // ~160px (gap doi 80px)
     const isAir = Math.random() < 0.5;
     let baseY;
     let floatAmp = 0;
     if (isAir) {
-      baseY = 55;
-      floatAmp = 6;
+      // Do cao bay vua phai, nam trong tam nhay cua Hero (khong bi bay sat tran)
+      baseY = 75; // y = 75px
+      floatAmp = 5;
     } else {
       baseY = GROUND_Y - h - 2;
       floatAmp = 0;
@@ -1207,11 +1249,9 @@ if (canvas) {
     const x = findSafeSpawnX(CW + 20, w, "coin");
     coins.push({ kind: "coin", x, y, w, h, frame: Math.random() * sprite.frames | 0, timer: 0, taken: false });
   }, spawnGreenCandle = function() {
-    const roll = Math.random();
-    const tier = pumpActiveTimer > 0
-      ? { points: 200, height: 66, spriteKey: "greenCandle2" }
-      : GREEN_CANDLE_TIERS.find((item) => roll < item.cutoff);
     scheduleNextGreenCandle();
+    const roll = pumpActiveTimer > 0 ? Math.random() * 0.36 : Math.random();
+    const tier = GREEN_CANDLE_TIERS.find((item) => roll < item.cutoff) || (pumpActiveTimer > 0 ? GREEN_CANDLE_TIERS[3] : null);
     if (!tier) return;
     const h = tier.height * GREEN_CANDLE_SCALE;
     const w = 36 * GREEN_CANDLE_SCALE;
@@ -1437,10 +1477,13 @@ if (canvas) {
           // Bat dau fade in nhac moi (bonus-time.mp3)
           startBonusMusic();
 
-          // Bat dau 15s voi nen xanh
-          pumpActiveTimer = 15000;
+          // Bat dau 30s voi nen xanh
+          pumpActiveTimer = 30000;
           coins = [];
           obstacles = [];
+          scheduleNextObstacle();
+          scheduleNextGreenCandle();
+          spawnPumpGreenCandle();
           spawnPumpGreenCandle();
         }
         return;
@@ -1524,8 +1567,10 @@ if (canvas) {
     if (pumpActiveTimer > 0) {
       pumpActiveTimer = Math.max(0, pumpActiveTimer - dt);
       if (pumpActiveTimer <= 0) {
-        // Sau khi het 15s lai bat dau nhac cu!
+        // Sau khi het 30s lai bat dau nhac cu!
         startMusicPlayback(1000);
+        scheduleNextObstacle();
+        scheduleNextCoin();
       }
     }
     if (elapsed >= nextObstacleAt) spawnObstacle();
@@ -1669,32 +1714,16 @@ if (canvas) {
         candle.taken = true;
         playSfx("coin");
 
-        if (pumpActiveTimer > 0) {
-          // Trong 15s Pump: diem nen xanh tich luy theo moc 10k (100, 200, 300... cap o 1000)
-          const pumpCandleTier = Math.floor(score / 10000) + 1;
-          const candleBonus = Math.min(10, Math.max(1, pumpCandleTier)) * 100;
-          score += candleBonus;
-          popups.push({
-            x: candle.x + candle.w / 2,
-            y: candle.y,
-            life: 0,
-            dur: 850,
-            text: "+" + candleBonus,
-            color: "#4eff87"
-          });
-        } else {
-          // Ngoai 15s pump: an nen xanh cong diem co dinh 100 - 300 - 500 - 1000
-          const bonus = candle.points || 100;
-          score += bonus;
-          popups.push({
-            x: candle.x + candle.w / 2,
-            y: candle.y,
-            life: 0,
-            dur: 950,
-            text: "+" + bonus,
-            color: "#4eff87"
-          });
-        }
+        const bonus = candle.points || 100;
+        score += bonus;
+        popups.push({
+          x: candle.x + candle.w / 2,
+          y: candle.y,
+          life: 0,
+          dur: 850,
+          text: "+" + bonus,
+          color: "#4eff87"
+        });
       }
     }
   }, drawFrame = function(sprite, frameIndex, x, y, w, h) {
@@ -1806,7 +1835,7 @@ if (canvas) {
     ctx.beginPath();
     ctx.ellipse(Math.round(cx), GROUND_Y + 3, Math.max(1, Math.round(sw / 2)), Math.max(1, Math.round(sh / 2)), 0, 0, Math.PI * 2);
     ctx.fill();
-  }, draw = function() {
+  }, draw = function(ts) {
     ctx.clearRect(0, 0, CW, CH);
     const introBackground = cachedIntroBg || (SPRITES.background && SPRITES.background.img);
     const loopBackground = cachedNormalLoop || (SPRITES.backgroundLoop && SPRITES.backgroundLoop.img);
@@ -1873,6 +1902,10 @@ if (canvas) {
     for (let i = 0; i < coins.length; i++) {
       const c = coins[i];
       if (!c.taken) drawGroundShadow(c.x + c.w / 2, c.w, GROUND_Y - c.h - c.y);
+    }
+    for (let i = 0; i < pumps.length; i++) {
+      const p = pumps[i];
+      if (!p.taken) drawGroundShadow(p.x + p.w / 2, p.w * 0.7, GROUND_Y - p.h - p.y);
     }
     // green candle uses direct sprite without ground shadow overlay
     for (let i = 0; i < obstacles.length; i++) {
@@ -1951,8 +1984,12 @@ if (canvas) {
     }
     const shownScore = Math.floor(score);
     if (scoreEl && shownScore !== lastDisplayedScore) {
-      lastDisplayedScore = shownScore;
-      scoreEl.textContent = String(shownScore);
+      const now = ts || (typeof performance !== "undefined" ? performance.now() : Date.now());
+      if (now - lastScoreDomUpdate >= 60 || eventFreeze.active || state !== STATE.PLAYING) {
+        lastScoreDomUpdate = now;
+        lastDisplayedScore = shownScore;
+        scoreEl.textContent = String(shownScore);
+      }
     }
   }, loop = function(ts) {
     if (paused22) {
@@ -1962,7 +1999,7 @@ if (canvas) {
     }
     if (!lastTs) {
       lastTs = ts;
-      if (assetsReady) draw();
+      if (assetsReady) draw(ts);
       if (state === STATE.PLAYING || state === STATE.SPAWN || (state === STATE.OVER && !resultShown)) {
         requestAnimationFrame(loop);
       } else {
@@ -1977,22 +2014,11 @@ if (canvas) {
     // Clamp delta time to avoid large jumps if browser was tabbed or throttled (min 1ms, max 33.3ms)
     const dt = Math.min(33.33, Math.max(1, elapsed));
 
-    // For physics accuracy and collision stability, if dt > 18ms (e.g. 30fps drop),
-    // sub-step in two passes of dt/2.
-    if (dt > 18) {
-      const halfDt = dt * 0.5;
-      for (let s = 0; s < 2; s++) {
-        if (state === STATE.PLAYING) update(halfDt);
-        else if (state === STATE.SPAWN) updateSpawn(halfDt);
-        else if (state === STATE.OVER && !resultShown) updateHitBlink(halfDt);
-      }
-    } else {
-      if (state === STATE.PLAYING) update(dt);
-      else if (state === STATE.SPAWN) updateSpawn(dt);
-      else if (state === STATE.OVER && !resultShown) updateHitBlink(dt);
-    }
+    if (state === STATE.PLAYING) update(dt);
+    else if (state === STATE.SPAWN) updateSpawn(dt);
+    else if (state === STATE.OVER && !resultShown) updateHitBlink(dt);
 
-    if (assetsReady) draw();
+    if (assetsReady) draw(ts);
 
     if (state === STATE.PLAYING || state === STATE.SPAWN || (state === STATE.OVER && !resultShown)) {
       requestAnimationFrame(loop);
@@ -2501,6 +2527,7 @@ if (canvas) {
   let nextPumpCheckAt = 0;
   let popups = [];
   let lastDisplayedScore = -1;
+  let lastScoreDomUpdate = 0;
   let speed = BASE_SPEED;
   let elapsed = 0;
   let score = 0;
